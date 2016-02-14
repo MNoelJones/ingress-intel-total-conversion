@@ -139,13 +139,13 @@ with given.a_stored_transaction:
     inventory.stage_transaction("DR INV 5 X8")
     inventory.stage_transaction("CR 9FD860A1 5 X8")
     with and_.the_inventory_contents_should_be_correct:
-        the(len(inventory.resonators())).should.equal(10)
-        the(len(inventory.bursters())).should.equal(5)
+        the(len(inventory.resonators)).should.equal(10)
+        the(len(inventory.bursters)).should.equal(5)
         the(len(inventory.capsules["9FD860A1"].bursters)).should.equal(10)
 
     with then.applying_staged_transactions:
         inventory.apply_staged_transactions()
         with and_.the_inventory_contents_should_be_correct:
-            the(len(inventory.resonators())).should.equal(10)
-            the(len(inventory.bursters())).should.equal(0)
+            the(len(inventory.resonators)).should.equal(10)
+            the(len(inventory.bursters)).should.equal(0)
             the(len(inventory.capsules["9FD860A1"].bursters)).should.equal(15)

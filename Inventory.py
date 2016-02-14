@@ -141,6 +141,26 @@ class Container(ItemWithRarity):
     def guid(self, val):
         self._guid = val
 
+    @property
+    def resonators(self):
+        return [x for x in self._contents if isinstance(x, Resonator)]
+
+    @property
+    def weapons(self):
+        return [x for x in self._contents if isinstance(x, Weapon)]
+
+    @property
+    def bursters(self):
+        return [x for x in self.weapons if isinstance(x, Burster)]
+
+    @property
+    def mods(self):
+        return [x for x in self._inventory if isinstance(x, Mod)]
+
+    @property
+    def powercubes(self):
+        return [x for x in self._inventory if isinstance(x, PowerCube)]
+
     def itemcount(self):
         return len(self.contents) + 1
 
@@ -304,9 +324,18 @@ class HeatSink(Mod):
         super(HeatSink, self).__init__()
 
 
+class Transaction(object):
+    def __init__(self):
+        self._transaction = None
+
+    def __call__(self, target):
+        pass
+
+
 class Inventory(object):
     def __init__(self):
         self._inventory = []
+        self._staged_transactions = []
         self._shortcodes = {
             'X': Burster,
             'P': PowerCube,
@@ -324,6 +353,10 @@ class Inventory(object):
             'R': Rare,
             'VR': VeryRare
         }
+
+    @property
+    def staged_transactions(self):
+        return self._staged_transactions
 
     @property
     def inventory(self):
@@ -393,6 +426,13 @@ class Inventory(object):
             except AttributeError:
                 pass
         return None
+
+    def stage_transaction(self, transaction):
+        self.staged_transactions.append(transaction)
+
+    def apply_staged_transactions(self):
+        for transaction in self.staged_transactions:
+            self.apply_transaction(transaction)
 
     def apply_transaction(self, transaction):
         tx_re = re.compile(
