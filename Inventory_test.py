@@ -92,7 +92,7 @@ with given.adding_from_a_transaction_specification_for_multiple_items:
         the(all(x.level == 8 for x in inventory.bursters)).should.be(True)
         the(all(x.level == 6 for x in inventory.resonators)).should.be(True)
 
-with given.using_a_debit_transation:
+with given.a_debit_transation:
     # Add 5 X8s so we can remove some of them
     inventory = Inventory.Inventory()
     transaction = "CR INV 5 X8"
@@ -105,3 +105,26 @@ with given.using_a_debit_transation:
         the(len(inventory.bursters)).should.equal(2)
     with then.the_bursters_should_all_be_level_eight:
         the(all(x.level == 8 for x in inventory.bursters)).should.be(True)
+
+with given.a_debit_transation_for_a_guid_item:
+    inventory = Inventory.Inventory()
+    # Add a Capsule with a GUID
+    capsule = Inventory.Capsule()
+    capsule.guid = "9FD860A1"
+    inventory.add(capsule)
+    # Add 5 X8s so we can remove some of them
+    transaction = "CR 9FD860A1 5 X8"
+    inventory.apply_transaction(transaction)
+    # Remove 3 of the added bursters
+    transaction = "DR 9FD860A1 3 X8"
+    inventory.apply_transaction(transaction)
+
+    with then.the_capsule_should_have_two_Bursters:
+        the(len(inventory.capsules["9FD860A1"])).should.equal(2)
+    with then.the_bursters_should_all_be_level_eight:
+        the(
+            all(
+                x.level == 8
+                for x in inventory.capsules["9FD860A1"]
+            )
+        ).should.be(True)
