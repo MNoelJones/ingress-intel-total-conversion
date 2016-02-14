@@ -98,13 +98,32 @@ class Resonator(ItemWithRarity):
         super(Resonator, self).__init__()
 
 
+class _Pointer(object):
+    def __init__(self, data):
+        self._data = data
+        self._index = 0
+
+    def next(self):
+        if self._index == len(self._data):
+            raise StopIteration
+        element = self._data[self._index]
+        self._index += 1
+        return element
+
+
 class Container(ItemWithRarity):
-    def __init__(self, id=None):
+    def __init__(self, guid=None):
         super(Container, self).__init__()
-        self._id = id or None
+        self._guid = guid or None
         self._contents = []
         # Array of valid items for this container
         self._restricted_items = []
+
+    def __iter__(self):
+        return _Pointer(self._contents)
+
+    def __len__(self):
+        return len(self.contents)
 
     @property
     def contents(self):
@@ -113,6 +132,14 @@ class Container(ItemWithRarity):
     @contents.setter
     def contents(self, val):
         self._contents = val
+
+    @property
+    def guid(self):
+        return self._guid
+
+    @guid.setter
+    def guid(self, val):
+        self._guid = val
 
     def itemcount(self):
         return len(self.contents) + 1
@@ -123,6 +150,29 @@ class Container(ItemWithRarity):
     def add(self, item):
         assert(any([isinstance(item, x) for x in self._restricted_items]))
         self.contents.append(item)
+
+    def delete(self, item):
+        try:
+            for elem in self.contents:
+                try:
+                    # identify item by guid and remove it.
+                    if elem.guid == item.guid:
+                        self.contents.remove(elem)
+                        break
+                except AttributeError:
+                    if (item.__class__ == elem.__class__ and
+                       item.level == elem.level and
+                       item.rarity == elem.rarity):
+                        self.contents.remove(elem)
+                        break
+            else:
+                raise RuntimeError(
+                    "Could not find item with guid {} in inventory".format(
+                        item.guid
+                    )
+                )
+        except ValueError:
+            pass
 
 
 class MUFG(Container):
@@ -299,6 +349,10 @@ class Inventory(object):
     def powercubes(self):
         return [x for x in self._inventory if isinstance(x, PowerCube)]
 
+    @property
+    def capsules(self):
+        return {x.guid: x for x in self._inventory if isinstance(x, Capsule)}
+
     def itemcount(self):
         return reduce(lambda a, b: a+b.itemcount(), self.inventory, 0)
 
@@ -331,6 +385,15 @@ class Inventory(object):
         except ValueError:
             pass
 
+    def find_item(self, guid=None):
+        for item in self.inventory:
+            try:
+                if item.guid == guid:
+                    return item
+            except AttributeError:
+                pass
+        return None
+
     def apply_transaction(self, transaction):
         tx_re = re.compile(
             (
@@ -345,7 +408,7 @@ class Inventory(object):
         for match in tx_re.finditer(transaction):
             target = self
             if match.group("target") != "INV":
-                target = match.group("target")
+                target = self.find_item(guid=match.group("target"))
             self._apply_individual_transaction(
                 operations[match.group("crdr")],
                 target,
