@@ -354,37 +354,54 @@ class Inventory(object):
             'VR': VeryRare
         }
 
-    @property
-    def staged_transactions(self):
-        return self._staged_transactions
+    def __setattr__(self, name, val):
+        if name in ("_staged_transactions",
+                    "_inventory",
+                    "_shortcodes",
+                    "_raritycodes"):
+            self.__dict__[name] = val
+        if name in ("staged_transactions", "inventory"):
+            realname = "_{}".format(name)
+            self.__dict__[realname] = val
 
-    @property
-    def inventory(self):
-        return self._inventory
-
-    @property
-    def resonators(self):
-        return [x for x in self._inventory if isinstance(x, Resonator)]
-
-    @property
-    def weapons(self):
-        return [x for x in self._inventory if isinstance(x, Weapon)]
-
-    @property
-    def bursters(self):
-        return [x for x in self.weapons if isinstance(x, Burster)]
-
-    @property
-    def mods(self):
-        return [x for x in self._inventory if isinstance(x, Mod)]
-
-    @property
-    def powercubes(self):
-        return [x for x in self._inventory if isinstance(x, PowerCube)]
-
-    @property
-    def capsules(self):
-        return {x.guid: x for x in self._inventory if isinstance(x, Capsule)}
+    def __getattr__(self, name):
+        property_map_lists = {
+            "resonators": Resonator,
+            "weapons": Weapon,
+            "bursters": Burster,
+            "mods": Mod,
+            "powercubes": PowerCube,
+        }
+        property_map_dicts = {
+            "capsules": Capsule
+        }
+        if name in self.__dict__:
+            return self.__dict__[name]
+        if name in ("staged_transactions", "inventory"):
+            try:
+                realname = "_{}".format(name)
+                return self.__dict__[realname]
+            except KeyError:
+                raise AttributeError(
+                    "Could not find attribute {} ({}) on {}".format(
+                        name,
+                        realname,
+                        type(self).__name__
+                    )
+                )
+        if name in property_map_lists:
+            return [
+                x for x in self.inventory
+                if isinstance(x, property_map_lists[name])
+            ]
+        if name in property_map_dicts:
+            return {
+                x.guid: x for x in self.inventory
+                if isinstance(x, property_map_dicts[name])
+            }
+        raise AttributeError(
+            "No attribute {} on {}".format(name, type(self).__name__)
+        )
 
     def itemcount(self):
         return reduce(lambda a, b: a+b.itemcount(), self.inventory, 0)
