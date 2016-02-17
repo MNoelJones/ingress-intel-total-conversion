@@ -149,3 +149,10 @@ with given.a_stored_transaction:
             the(len(inventory.resonators)).should.equal(10)
             the(len(inventory.bursters)).should.equal(0)
             the(len(inventory.capsules["9FD860A1"].bursters)).should.equal(15)
+
+with given.A_transaction_for_a_Common_Shield:
+    inventory = Inventory.Inventory()
+    inventory.apply_transaction("CR INV 1 CS")
+    with and_.The_inventory_should_contain_one_Common_Shield:
+        the(len(inventory.shields)).should.be(1)
+        the(inventory.shields[0].rarity).should.be(Inventory.Common)

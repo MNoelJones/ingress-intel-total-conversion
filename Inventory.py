@@ -371,6 +371,7 @@ class Inventory(object):
             "bursters": Burster,
             "mods": Mod,
             "powercubes": PowerCube,
+            "shields": Shield,
         }
         property_map_dicts = {
             "capsules": Capsule
