@@ -99,27 +99,6 @@ class VeryRare(Rarity):
         self._shortcode = "VR"
 
 
-# class ItemWithRarity(Item):
-#     def __init__(self):
-#         super(ItemWithRarity, self).__init__()
-#         self._rarity = None
-#
-#     @property
-#     def rarity(self):
-#         return self._rarity
-#
-#     @rarity.setter
-#     def rarity(self, rarity):
-#         self._rarity = rarity
-#
-#     def __eq__(self, other):
-#         if (self.__class__ == other.__class__ and
-#            self.level == other.level and
-#            self.rarity == other.rarity):
-#             return True
-#         return False
-
-
 class Key(Item):
     """ """
     def __init__(self):
