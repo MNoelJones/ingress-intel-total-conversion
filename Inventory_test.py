@@ -1,7 +1,6 @@
 # Inventory BDD Tests
 from pyspecs import given, when, the, then, and_, however
 import Inventory
-import re
 
 # It should allow you to add any Item to it
 with given.an_empty_inventory:
