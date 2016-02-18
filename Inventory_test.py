@@ -72,7 +72,7 @@ with given.a_L8_burster:
     with then.the_level_should_report_8:
         the(burster.level).should.equal(8)
 
-with given.adding_individual_item_from_a_processed_transaction_should_be_correct:
+with given.adding_individual_item_from_processed_transaction_should_be_correct:
     inventory = Inventory.Inventory()
     transaction = "5 X8"
     operation = "add"
