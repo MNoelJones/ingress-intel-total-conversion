@@ -123,10 +123,11 @@ with given.a_debit_transation:
 
 with given.a_debit_transation_for_a_guid_item:
     inventory = Inventory.Inventory()
-    # Add a Capsule with a GUID
-    capsule = Inventory.Capsule()
-    capsule.guid = "9FD860A1"
-    inventory.add(capsule)
+    for guid in ("AABBAABB", "9FD860A1"):
+        # Add a Capsule with a GUID
+        capsule = Inventory.Capsule()
+        capsule.guid = guid
+        inventory.add(capsule)
     # Add 5 X8s so we can remove some of them
     transaction = "CR 9FD860A1 5 X8"
     inventory.apply_transaction(transaction)
@@ -134,7 +135,9 @@ with given.a_debit_transation_for_a_guid_item:
     transaction = "DR 9FD860A1 3 X8"
     inventory.apply_transaction(transaction)
 
-    with then.the_capsule_should_have_two_Bursters:
+    with then.the_other_capsule_should_be_empty:
+        the(len(inventory.capsules["AABBAABB"])).should.equal(0)
+    with then.the_targeted_capsule_should_have_two_Bursters:
         the(len(inventory.capsules["9FD860A1"])).should.equal(2)
     with then.the_bursters_should_all_be_level_eight:
         the(
