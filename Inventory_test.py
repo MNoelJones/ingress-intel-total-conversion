@@ -1,6 +1,7 @@
 # Inventory BDD Tests
 from pyspecs import given, when, the, then, and_, however
 import Inventory
+import re
 
 # It should allow you to add any Item to it
 with given.an_empty_inventory:
@@ -71,6 +72,17 @@ with given.a_L8_burster:
     burster.level = 8
     with then.the_level_should_report_8:
         the(burster.level).should.equal(8)
+
+with given.adding_individual_item_from_a_processed_transaction_should_be_correct:
+    inventory = Inventory.Inventory()
+    transaction = "5 X8"
+    operation = "add"
+    target = inventory
+    inventory._apply_individual_transaction(operation, target, transaction)
+    with then.the_inventory_should_have_five_Bursters:
+        the(len(inventory.bursters)).should.equal(5)
+    with then.the_bursters_should_all_be_level_eight:
+        the(all(x.level == 8 for x in inventory.bursters)).should.be(True)
 
 with given.adding_inventory_from_a_transaction_specification_for_5_L8_Bursters:
     inventory = Inventory.Inventory()

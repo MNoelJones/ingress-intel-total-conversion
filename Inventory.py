@@ -337,16 +337,20 @@ class Inventory(object):
         self._inventory = []
         self._staged_transactions = []
         self._shortcodes = {
-            'X': Burster,
-            'P': PowerCube,
-            'MH': MultiHack,
-            'HS': HeatSink,
-            'S': Shield,
-            'FA': ForceAmp,
-            'LA': LinkAmp,
-            'T': Turret,
-            'R': Resonator,
-            'US': Ultrastrike
+            "level_items": {
+                'X': Burster,
+                'P': PowerCube,
+                'R': Resonator,
+                'US': Ultrastrike
+            },
+            "nolevel_items": {
+                'MH': MultiHack,
+                'HS': HeatSink,
+                'S': Shield,
+                'FA': ForceAmp,
+                'LA': LinkAmp,
+                'T': Turret,
+            }
         }
         self._raritycodes = {
             'C': Common,
@@ -456,13 +460,14 @@ class Inventory(object):
         tx_re = re.compile(
             (
              r'(?P<crdr>CR|DR)\s+(?P<target>\w+)\s+'
-             r'(?P<transaction>(?:\d+\s+(?:{})\d\s*)+)'
-            ).format('|'.join(x for x in self._shortcodes))
+             r'(?P<transaction>(?:\d+\s+\w+\d?\s*)+)'
+            )
         )
         operations = {
             "CR": "add",
             "DR": "delete"
         }
+        print "Applying transactions from {}".format(transaction)
         for match in tx_re.finditer(transaction):
             target = self
             if match.group("target") != "INV":
@@ -475,18 +480,36 @@ class Inventory(object):
 
     def _apply_individual_transaction(self, operation, target, transaction):
         tx_re = re.compile(
-            r'(?P<amount>\d+)\s+(?P<shortcode>(?:{}))(?P<level>\d)\s*'.format(
-                '|'.join(x for x in self._shortcodes)
+            (
+                r'(?P<amount>\d+)\s+'
+                r'(?:'
+                r'(?P<lshortcode>(?:{}))(?P<level>\d)|'
+                r'(?P<rarity>{})(?P<nlshortcode>(?:{}))'
+                r')\s*'
+            ).format(
+                '|'.join(x for x in self._shortcodes["level_items"]),
+                '|'.join(x for x in self._raritycodes),
+                '|'.join(x for x in self._shortcodes["nolevel_items"])
             )
         )
 
+        print "Searching for matches in {}".format(transaction)
         for match in tx_re.finditer(transaction):
             for _ in range(0, int(match.group("amount"))):
-                klass = self._shortcodes[match.group("shortcode")]
-                item = klass()
-                item.level = int(match.group("level"))
+                if match.group("nlshortcode"):
+                    shortcode = match.group("nlshortcode")
+                    klass = self._shortcodes["nolevel_items"][shortcode]
+                    item = klass()
+
+                if match.group("lshortcode"):
+                    shortcode = match.group("lshortcode")
+                    klass = self._shortcodes["level_items"][shortcode]
+                    item = klass()
+                    item.level = int(match.group("level"))
+
+                print klass
                 try:
                     item.rarity = self._raritycodes[match.group("rarity")]
-                except IndexError:
+                except KeyError:
                     pass
                 getattr(target, operation)(item)
