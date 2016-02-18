@@ -1,6 +1,33 @@
 import re
 
 
+class RarityMeta(type):
+    def __new__(cls, name, bases, clsdict):
+        if "_rarity" not in clsdict:
+            clsdict["_rarity"] = None
+            clsdict["rarity"] = property(
+                lambda self: getattr(self, "_rarity"),
+                lambda self, val: setattr(self, "_rarity", val)
+            )
+        if "__eq__" in clsdict:
+            old_eq = clsdict["__eq__"]
+
+            def new_eq(self, other):
+                if (self.rarity == other.rarity and
+                   old_eq(self, other)):
+                    return True
+                return False
+        else:
+            def new_eq(self, other):
+                if (self.__class__ == other.__class__ and
+                   self.rarity == other.rarity):
+                    return True
+                return False
+
+            clsdict["__eq__"] = new_eq
+        return super(RarityMeta, cls).__new__(cls, name, bases, clsdict)
+
+
 class Item(object):
     """ A virtual class container for all Inventory item types """
     def __init__(self):
@@ -72,25 +99,25 @@ class VeryRare(Rarity):
         self._shortcode = "VR"
 
 
-class ItemWithRarity(Item):
-    def __init__(self):
-        super(ItemWithRarity, self).__init__()
-        self._rarity = None
-
-    @property
-    def rarity(self):
-        return self._rarity
-
-    @rarity.setter
-    def rarity(self, rarity):
-        self._rarity = rarity
-
-    def __eq__(self, other):
-        if (self.__class__ == other.__class__ and
-           self.level == other.level and
-           self.rarity == other.rarity):
-            return True
-        return False
+# class ItemWithRarity(Item):
+#     def __init__(self):
+#         super(ItemWithRarity, self).__init__()
+#         self._rarity = None
+#
+#     @property
+#     def rarity(self):
+#         return self._rarity
+#
+#     @rarity.setter
+#     def rarity(self, rarity):
+#         self._rarity = rarity
+#
+#     def __eq__(self, other):
+#         if (self.__class__ == other.__class__ and
+#            self.level == other.level and
+#            self.rarity == other.rarity):
+#             return True
+#         return False
 
 
 class Key(Item):
@@ -111,14 +138,19 @@ class Powerup(Item):
         super(Powerup, self).__init__()
 
 
-class PowerCube(ItemWithRarity):
+class PowerCube(Item):
     """ """
+    __metaclass__ = RarityMeta
+
     def __init__(self):
         super(PowerCube, self).__init__()
 
 
-class Resonator(ItemWithRarity):
+class Resonator(Item):
     """ """
+
+    __metaclass__ = RarityMeta
+
     def __init__(self):
         super(Resonator, self).__init__()
 
@@ -136,7 +168,11 @@ class _Pointer(object):
         return element
 
 
-class Container(ItemWithRarity):
+class Container(Item):
+    """ """
+
+    __metaclass__ = RarityMeta
+
     def __init__(self, guid=None):
         super(Container, self).__init__()
         self._guid = guid or None
@@ -259,8 +295,11 @@ class KeyCapsule(Container):
         return 1
 
 
-class Weapon(ItemWithRarity):
+class Weapon(Item):
     """ """
+
+    __metaclass__ = RarityMeta
+
     def __init__(self):
         super(Weapon, self).__init__()
         self.rarity = VeryCommon()
@@ -297,8 +336,11 @@ class Jarvis(Virus):
         super(Jarvis, self).__init__()
 
 
-class Mod(ItemWithRarity):
+class Mod(Item):
     """ """
+
+    __metaclass__ = RarityMeta
+
     def __init__(self):
         super(Mod, self).__init__()
 
