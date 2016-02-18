@@ -23,6 +23,12 @@ class Item(object):
     def invcount(self):
         return 1
 
+    def __eq__(self, other):
+        if (self.__class__ == other.__class__ and
+           self.level == other.level):
+            return True
+        return False
+
 
 class Rarity(object):
     """
@@ -32,6 +38,11 @@ class Rarity(object):
     def __init__(self):
         self._shortcode = None
 
+    def __eq__(self, other):
+        if self.__class__ == other.__class__:
+            return True
+        return False
+
 
 class Common(Rarity):
     """ Very Rare level rarity """
@@ -40,11 +51,18 @@ class Common(Rarity):
         self._shortcode = "VR"
 
 
+class VeryCommon(Rarity):
+    """ Very Common level rarity """
+    def __init__(self):
+        super(VeryCommon, self).__init__()
+        self._shortcode = "VC"
+
+
 class Rare(Rarity):
     """ Rare level rarity """
     def __init__(self):
         super(Rare, self).__init__()
-        self._shortcode = "VR"
+        self._shortcode = "R"
 
 
 class VeryRare(Rarity):
@@ -66,6 +84,13 @@ class ItemWithRarity(Item):
     @rarity.setter
     def rarity(self, rarity):
         self._rarity = rarity
+
+    def __eq__(self, other):
+        if (self.__class__ == other.__class__ and
+           self.level == other.level and
+           self.rarity == other.rarity):
+            return True
+        return False
 
 
 class Key(Item):
@@ -238,6 +263,7 @@ class Weapon(ItemWithRarity):
     """ """
     def __init__(self):
         super(Weapon, self).__init__()
+        self.rarity = VeryCommon()
 
 
 class Burster(Weapon):
@@ -256,6 +282,7 @@ class Virus(Weapon):
     """ """
     def __init__(self):
         super(Virus, self).__init__()
+        self.rarity = VeryRare()
 
 
 class Ada(Virus):
@@ -286,12 +313,14 @@ class ForceAmp(Mod):
     """ """
     def __init__(self):
         super(ForceAmp, self).__init__()
+        self.rarity = Rare()
 
 
 class Turret(Mod):
     """ """
     def __init__(self):
         super(Turret, self).__init__()
+        self.rarity = Rare()
 
 
 class Shield(Mod):
@@ -310,6 +339,7 @@ class LinkAmp(Mod):
     """ """
     def __init__(self):
         super(LinkAmp, self).__init__()
+        self.rarity = Rare()
 
 
 class SoftBankUltraLink(LinkAmp):
@@ -420,22 +450,24 @@ class Inventory(object):
     def delete(self, item):
         try:
             for elem in self.inventory:
-                try:
-                    # identify item by guid and remove it.
-                    if elem.guid == item.guid:
-                        self.inventory.remove(elem)
-                        break
-                except AttributeError:
-                    if (item.__class__ == elem.__class__ and
-                       item.level == elem.level and
-                       item.rarity == elem.rarity):
-                        self.inventory.remove(elem)
-                        break
+                if item == elem:
+                    self.inventory.remove(elem)
+                    break
+
+                if False:
+                    try:
+                        # identify item by guid and remove it.
+                        if elem.guid == item.guid:
+                            self.inventory.remove(elem)
+                            break
+                    except AttributeError:
+                        if (item.__class__ == elem.__class__ and
+                           item.level == elem.level and
+                           item.rarity == elem.rarity):
+                            break
             else:
                 raise RuntimeError(
-                    "Could not find item with guid {} in inventory".format(
-                        item.guid
-                    )
+                    "Could not find item {} in inventory".format(item)
                 )
         except ValueError:
             pass
@@ -467,7 +499,6 @@ class Inventory(object):
             "CR": "add",
             "DR": "delete"
         }
-        print "Applying transactions from {}".format(transaction)
         for match in tx_re.finditer(transaction):
             target = self
             if match.group("target") != "INV":
@@ -493,7 +524,6 @@ class Inventory(object):
             )
         )
 
-        print "Searching for matches in {}".format(transaction)
         for match in tx_re.finditer(transaction):
             for _ in range(0, int(match.group("amount"))):
                 if match.group("nlshortcode"):
@@ -507,7 +537,6 @@ class Inventory(object):
                     item = klass()
                     item.level = int(match.group("level"))
 
-                print klass
                 try:
                     item.rarity = self._raritycodes[match.group("rarity")]
                 except KeyError:

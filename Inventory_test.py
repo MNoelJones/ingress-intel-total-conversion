@@ -109,6 +109,9 @@ with given.a_debit_transation:
     inventory = Inventory.Inventory()
     transaction = "CR INV 5 X8"
     inventory.apply_transaction(transaction)
+    with then.the_inventory_should_have_five_Bursters:
+        the(len(inventory.bursters)).should.equal(5)
+
     # Remove 3 of the added bursters
     transaction = "DR INV 3 X8"
     inventory.apply_transaction(transaction)
