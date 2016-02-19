@@ -404,10 +404,7 @@ class Inventory(object):
         self._shortcodes = {
             plevel: {
                 cls._shortcode: cls
-                for cls in (
-                    ForceAmp, HeatSink, LinkAmp, MultiHack, Shield,
-                    Turret, Resonator, Ultrastrike, Burster
-                )
+                for _, cls in sys.modules[__name__].__dict__.items()
                 if isinstance(cls, type) and
                 (
                     ("has_level" in cls.__dict__)
