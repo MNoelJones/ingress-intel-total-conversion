@@ -476,10 +476,10 @@ class Inventory(object):
         )
 
     def itemcount(self):
-        return reduce(lambda a, b: a+b.itemcount(), self.inventory, 0)
+        return sum([x.itemcount() for x in self.inventory])
 
     def invcount(self):
-        return reduce(lambda a, b: a+b.invcount(), self.inventory, 0)
+        return sum([x.invcount() for x in self.inventory])
 
     def add(self, item):
         self.inventory.append(item)
