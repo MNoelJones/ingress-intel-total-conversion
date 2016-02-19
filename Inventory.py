@@ -1,48 +1,68 @@
 import re
 
 
-class RarityMeta(type):
-    def __new__(cls, name, bases, clsdict):
-        if "_rarity" not in clsdict:
-            clsdict["_rarity"] = None
-            clsdict["rarity"] = property(
-                lambda self: getattr(self, "_rarity"),
-                lambda self, val: setattr(self, "_rarity", val)
-            )
-        if "__eq__" in clsdict:
-            old_eq = clsdict["__eq__"]
+class _Pointer(object):
+    def __init__(self, data):
+        self._data = data
+        self._index = 0
 
-            def new_eq(self, other):
-                if (self.rarity == other.rarity and
-                   old_eq(self, other)):
-                    return True
-                return False
-        else:
-            def new_eq(self, other):
-                if (self.__class__ == other.__class__ and
-                   self.rarity == other.rarity):
-                    return True
-                return False
+    def next(self):
+        if self._index == len(self._data):
+            raise StopIteration
+        element = self._data[self._index]
+        self._index += 1
+        return element
 
-            clsdict["__eq__"] = new_eq
-        return super(RarityMeta, cls).__new__(cls, name, bases, clsdict)
+
+def setshortcode(code):
+    def getter(self):
+        return getattr(self, "shortcode", code)
+
+    prop = property(getter, None)
+
+    def decorator(cls):
+        setattr(cls, "_shortcode", code)
+        setattr(cls, "shortcode", prop)
+        return cls
+
+    return decorator
+
+
+def rarityproperty(cls):
+    def getter(self):
+        return getattr(self, "_rarity", None)
+
+    def setter(self, value):
+        setattr(self, "_rarity", value)
+
+    prop = property(getter, setter)
+
+    setattr(cls, "_rarity", None)
+    setattr(cls, "rarity", prop)
+    cls.has_rarity = classmethod(lambda: True)
+    return cls
+
+
+def levelproperty(cls):
+    def getter(self):
+        return getattr(self, "_level", None)
+
+    def setter(self, value):
+        setattr(self, "_level", value)
+
+    prop = property(getter, setter)
+
+    setattr(cls, "_level", None)
+    setattr(cls, "level", prop)
+    cls.has_level = classmethod(lambda: True)
+    return cls
 
 
 class Item(object):
     """ A virtual class container for all Inventory item types """
     def __init__(self):
         """ level: all items have a level... don't they? """
-        self._level = None
         self._shortcode = None
-
-    @property
-    def level(self):
-        """ Item Level """
-        return self._level
-
-    @level.setter
-    def level(self, lvl):
-        self._level = lvl
 
     def itemcount(self):
         return 1
@@ -117,41 +137,28 @@ class Powerup(Item):
         super(Powerup, self).__init__()
 
 
+@levelproperty
+@rarityproperty
+@setshortcode("P")
 class PowerCube(Item):
     """ """
-    __metaclass__ = RarityMeta
-
     def __init__(self):
         super(PowerCube, self).__init__()
 
 
+@levelproperty
+@rarityproperty
+@setshortcode("R")
 class Resonator(Item):
     """ """
-
-    __metaclass__ = RarityMeta
-
     def __init__(self):
         super(Resonator, self).__init__()
+        self.rarity = VeryCommon()
 
 
-class _Pointer(object):
-    def __init__(self, data):
-        self._data = data
-        self._index = 0
-
-    def next(self):
-        if self._index == len(self._data):
-            raise StopIteration
-        element = self._data[self._index]
-        self._index += 1
-        return element
-
-
+@rarityproperty
 class Container(Item):
     """ """
-
-    __metaclass__ = RarityMeta
-
     def __init__(self, guid=None):
         super(Container, self).__init__()
         self._guid = guid or None
@@ -274,22 +281,24 @@ class KeyCapsule(Container):
         return 1
 
 
+@rarityproperty
 class Weapon(Item):
     """ """
-
-    __metaclass__ = RarityMeta
-
     def __init__(self):
         super(Weapon, self).__init__()
         self.rarity = VeryCommon()
 
 
+@levelproperty
+@setshortcode("X")
 class Burster(Weapon):
     """ """
     def __init__(self):
         super(Burster, self).__init__()
 
 
+@levelproperty
+@setshortcode("US")
 class Ultrastrike(Weapon):
     """ """
     def __init__(self):
@@ -315,21 +324,21 @@ class Jarvis(Virus):
         super(Jarvis, self).__init__()
 
 
+@rarityproperty
 class Mod(Item):
     """ """
-
-    __metaclass__ = RarityMeta
-
     def __init__(self):
         super(Mod, self).__init__()
 
 
+@setshortcode("MH")
 class MultiHack(Mod):
     """ """
     def __init__(self):
         super(MultiHack, self).__init__()
 
 
+@setshortcode("FA")
 class ForceAmp(Mod):
     """ """
     def __init__(self):
@@ -337,6 +346,7 @@ class ForceAmp(Mod):
         self.rarity = Rare()
 
 
+@setshortcode("T")
 class Turret(Mod):
     """ """
     def __init__(self):
@@ -344,6 +354,7 @@ class Turret(Mod):
         self.rarity = Rare()
 
 
+@setshortcode("S")
 class Shield(Mod):
     """ """
     def __init__(self):
@@ -356,6 +367,7 @@ class AxaShield(Shield):
         self.rarity = VeryRare()
 
 
+@setshortcode("LA")
 class LinkAmp(Mod):
     """ """
     def __init__(self):
@@ -369,6 +381,7 @@ class SoftBankUltraLink(LinkAmp):
         self.rarity = VeryRare()
 
 
+@setshortcode("HS")
 class HeatSink(Mod):
     """ """
     def __init__(self):
