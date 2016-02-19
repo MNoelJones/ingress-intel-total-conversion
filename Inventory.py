@@ -207,6 +207,7 @@ class Resonator(Item):
         self.rarity = VeryCommon()
 
 
+@guidproperty
 @rarityproperty
 class Container(Item):
     """ """
@@ -230,14 +231,6 @@ class Container(Item):
     @contents.setter
     def contents(self, val):
         self._contents = val
-
-    @property
-    def guid(self):
-        return self._guid
-
-    @guid.setter
-    def guid(self, val):
-        self._guid = val
 
     @property
     def resonators(self):
