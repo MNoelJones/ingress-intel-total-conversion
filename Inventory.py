@@ -27,7 +27,20 @@ def setter_factory(name, prefix="_"):
     return setter
 
 
-def decorator_factory(name, prefixes=None, prop=None, default_value=None):
+def decorator_factory(
+    name,
+    prefixes=None,
+    properties=None,
+    default_value=None
+):
+    getter, setter = None, None
+    if 'getter' in properties:
+        getter = getter_factory(name, prefix=None, default_value=default_value)
+    if 'setter' in properties:
+        setter = setter_factory(name, prefix=None)
+
+    prop = property(getter, setter)
+
     def set_prefixed_attrs(cls, name, prefixes, default_value):
         if prefixes:
             if not isinstance(prefixes, list):
@@ -36,7 +49,7 @@ def decorator_factory(name, prefixes=None, prop=None, default_value=None):
                 setattr(cls, "{}{}".format(prefix, name), default_value)
 
     def decorator(cls):
-        if prop:
+        if properties:
             setattr(cls, name, prop)
             if prefixes:
                 set_prefixed_attrs(cls, name, prefixes, default_value)
@@ -50,31 +63,21 @@ def decorator_factory(name, prefixes=None, prop=None, default_value=None):
 
 
 def setshortcode(code):
-    prop = property(
-        getter_factory("shortcode", prefix=None, default_value=code),
-        None
-    )
-
     decorator = decorator_factory(
         "shortcode",
         prefixes="_",
         default_value=code,
-        prop=prop
+        properties=["getter"]
     )
 
     return decorator
 
 
 def guidproperty(cls):
-    prop = property(
-        getter_factory("guid"),
-        setter_factory("guid")
-    )
-
     decorator = decorator_factory(
         "guid",
         prefixes="_",
-        prop=prop
+        properties=["getter", "setter"]
     )
 
     cls.has_guid = classmethod(lambda: True)
@@ -83,15 +86,10 @@ def guidproperty(cls):
 
 
 def rarityproperty(cls):
-    prop = property(
-        getter_factory("rarity"),
-        setter_factory("rarity")
-    )
-
     decorator = decorator_factory(
         "rarity",
         prefixes="_",
-        prop=prop
+        properties=["getter", "setter"]
     )
 
     cls.has_rarity = classmethod(lambda: True)
@@ -100,18 +98,15 @@ def rarityproperty(cls):
 
 
 def levelproperty(cls):
-    def getter(self):
-        return getattr(self, "_level", None)
+    decorator = decorator_factory(
+        "level",
+        prefixes="_",
+        properties=["getter", "setter"]
+    )
 
-    def setter(self, value):
-        setattr(self, "_level", value)
-
-    prop = property(getter, setter)
-
-    setattr(cls, "_level", None)
-    setattr(cls, "level", prop)
     cls.has_level = classmethod(lambda: True)
-    return cls
+
+    return decorator(cls)
 
 
 class Item(object):
