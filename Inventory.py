@@ -1,4 +1,5 @@
 import re
+import sys
 
 
 class _Pointer(object):
@@ -401,21 +402,41 @@ class Inventory(object):
         self._inventory = []
         self._staged_transactions = []
         self._shortcodes = {
-            "level_items": {
-                'X': Burster,
-                'P': PowerCube,
-                'R': Resonator,
-                'US': Ultrastrike
-            },
-            "nolevel_items": {
-                'MH': MultiHack,
-                'HS': HeatSink,
-                'S': Shield,
-                'FA': ForceAmp,
-                'LA': LinkAmp,
-                'T': Turret,
+            plevel: {
+                cls._shortcode: cls
+                for cls in (
+                    ForceAmp, HeatSink, LinkAmp, MultiHack, Shield,
+                    Turret, Resonator, Ultrastrike, Burster
+                )
+                if isinstance(cls, type) and
+                (
+                    ("has_level" in cls.__dict__)
+                    if plevel == "level_items"
+                    else
+                    ("has_level" not in cls.__dict__)
+                ) and
+                "_shortcode" in cls.__dict__
             }
+            for plevel in ("level_items", "nolevel_items")
         }
+        print self._shortcodes
+
+#         {
+#             "level_items": {
+#                 'X': Burster,
+#                 'P': PowerCube,
+#                 'R': Resonator,
+#                 'US': Ultrastrike
+#             },
+#             "nolevel_items": {
+#                 'MH': MultiHack,
+#                 'HS': HeatSink,
+#                 'S': Shield,
+#                 'FA': ForceAmp,
+#                 'LA': LinkAmp,
+#                 'T': Turret,
+#             }
+#         }
         self._raritycodes = {
             'C': Common,
             'R': Rare,
