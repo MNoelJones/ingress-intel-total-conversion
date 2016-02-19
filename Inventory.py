@@ -92,32 +92,32 @@ class Rarity(object):
         return False
 
 
+@setshortcode("C")
 class Common(Rarity):
     """ Very Rare level rarity """
     def __init__(self):
         super(Common, self).__init__()
-        self._shortcode = "VR"
 
 
+@setshortcode("VC")
 class VeryCommon(Rarity):
     """ Very Common level rarity """
     def __init__(self):
         super(VeryCommon, self).__init__()
-        self._shortcode = "VC"
 
 
+@setshortcode("R")
 class Rare(Rarity):
     """ Rare level rarity """
     def __init__(self):
         super(Rare, self).__init__()
-        self._shortcode = "R"
 
 
+@setshortcode("VR")
 class VeryRare(Rarity):
     """ Very Rare level rarity """
     def __init__(self):
         super(VeryRare, self).__init__()
-        self._shortcode = "VR"
 
 
 class Key(Item):
@@ -401,10 +401,11 @@ class Inventory(object):
     def __init__(self):
         self._inventory = []
         self._staged_transactions = []
+        this_module = sys.modules[__name__]
         self._shortcodes = {
             plevel: {
                 cls._shortcode: cls
-                for _, cls in sys.modules[__name__].__dict__.items()
+                for cls in this_module.__dict__.values()
                 if isinstance(cls, type) and
                 (
                     ("has_level" in cls.__dict__)
@@ -416,28 +417,12 @@ class Inventory(object):
             }
             for plevel in ("level_items", "nolevel_items")
         }
-        print self._shortcodes
-
-#         {
-#             "level_items": {
-#                 'X': Burster,
-#                 'P': PowerCube,
-#                 'R': Resonator,
-#                 'US': Ultrastrike
-#             },
-#             "nolevel_items": {
-#                 'MH': MultiHack,
-#                 'HS': HeatSink,
-#                 'S': Shield,
-#                 'FA': ForceAmp,
-#                 'LA': LinkAmp,
-#                 'T': Turret,
-#             }
-#         }
         self._raritycodes = {
-            'C': Common,
-            'R': Rare,
-            'VR': VeryRare
+            cls._shortcode: cls
+            for cls in this_module.__dict__.values()
+            if isinstance(cls, type) and
+            issubclass(cls, Rarity) and
+            "_shortcode" in cls.__dict__
         }
 
     def __setattr__(self, name, val):
