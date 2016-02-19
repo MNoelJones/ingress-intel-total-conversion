@@ -15,18 +15,70 @@ class _Pointer(object):
         return element
 
 
-def setshortcode(code):
+def getter_factory(name, prefix="_", default_value=None):
     def getter(self):
-        return getattr(self, "shortcode", code)
+        return getattr(self, "{}{}".format(prefix, name), default_value)
+    return getter
 
-    prop = property(getter, None)
+
+def setter_factory(name, prefix="_"):
+    def setter(self, value):
+        return setattr(self, "{}{}".format(prefix, name), value)
+    return setter
+
+
+def decorator_factory(name, prefixes=None, prop=None, default_value=None):
+    def set_prefixed_attrs(cls, name, prefixes, default_value):
+        if prefixes:
+            for prefix in prefixes:
+                setattr(cls, "{}{}".format(prefix, name), default_value)
 
     def decorator(cls):
-        setattr(cls, "_shortcode", code)
-        setattr(cls, "shortcode", prop)
+        if prop:
+            setattr(cls, name, prop)
+            if prefixes:
+                set_prefixed_attrs(cls, name, prefixes, default_value)
+        else:
+            if prefixes:
+                set_prefixed_attrs(cls, name, prefixes, default_value)
+            else:
+                setattr(cls, name, default_value)
         return cls
-
     return decorator
+
+
+def setshortcode(code):
+    prop = property(
+        getter_factory("shortcode", prefix=None, default_value=code),
+        None
+    )
+
+    decorator = decorator_factory(
+        "shortcode",
+        prefixes=["_"],
+        default_value=code,
+        prop=prop
+    )
+#     def decorator(cls):
+#         setattr(cls, "_shortcode", code)
+#         setattr(cls, "shortcode", prop)
+#         return cls
+    return decorator
+
+
+def guidproperty(cls):
+    def getter(self):
+        return getattr(self, "_guid", None)
+
+    def setter(self, value):
+        setattr(self, "_guid", value)
+
+    prop = property(getter, setter)
+
+    setattr(cls, "_rarity", None)
+    setattr(cls, "rarity", prop)
+    cls.has_rarity = classmethod(lambda: True)
+    return cls
 
 
 def rarityproperty(cls):
