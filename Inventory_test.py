@@ -1,5 +1,5 @@
 # Inventory BDD Tests
-from pyspecs import given, when, the, then, and_, however
+from pyspecs import given, when, the, then, and_, however, this
 import Inventory
 
 # It should allow you to add any Item to it
@@ -173,3 +173,27 @@ with given.A_transaction_for_a_Common_Shield:
     with and_.The_inventory_should_contain_one_Common_Shield:
         the(len(inventory.shields)).should.be(1)
         the(inventory.shields[0].rarity).should.be(Inventory.Common)
+
+with given.two_bursters:
+    b1 = Inventory.Burster()
+    b1.level = 8
+    b2 = Inventory.Burster()
+    with when.they_are_the_same_level:
+        b2.level = 8
+        with then.they_should_be_considered_equal:
+            this(b1 == b2).should.be(True)
+    with when.they_are_different_levels:
+        b2.level = 7
+        with then.they_should_not_be_considered_equal:
+            this(b1 == b2).should_NOT.be(True)
+
+with given.two_shields:
+    s1 = Inventory.Shield()
+    s1.rarity = Inventory.Rare()
+    s2 = Inventory.Shield()
+    with when.they_are_the_same_rarity:
+        s2.rarity = Inventory.Rare()
+        this(s1 == s2).should.be(True)
+    with when.they_are_different_rarity:
+        s2.rarity = Inventory.VeryRare()
+        this(s1 == s2).should.be(False)

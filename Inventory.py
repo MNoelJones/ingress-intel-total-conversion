@@ -29,35 +29,34 @@ def setter_factory(name, prefix="_"):
 
 def decorator_factory(
     name,
-    prefixes=None,
+    prefix=True,
     properties=None,
     default_value=None
 ):
-    getter, setter = None, None
-    if 'getter' in properties:
-        getter = getter_factory(name, prefix=None, default_value=default_value)
-    if 'setter' in properties:
-        setter = setter_factory(name, prefix=None)
-
-    prop = property(getter, setter)
-
-    def set_prefixed_attrs(cls, name, prefixes, default_value):
-        if prefixes:
-            if not isinstance(prefixes, list):
-                prefixes = list(prefixes)
-            for prefix in prefixes:
-                setattr(cls, "{}{}".format(prefix, name), default_value)
-
     def decorator(cls):
+        def set_prefixed_attrs(cls, name, default_value, prefix=True):
+            if prefix:
+                attr_format = "_{}"
+            else:
+                attr_format = "{}"
+            setattr(cls, attr_format.format(name), default_value)
+
+        getter, setter = None, None
+        if 'getter' in properties:
+            getter = getter_factory(
+                name,
+                prefix="",
+                default_value=default_value
+            )
+        if 'setter' in properties:
+            setter = setter_factory(name, prefix="")
+
+        prop = property(getter, setter)
         if properties:
             setattr(cls, name, prop)
-            if prefixes:
-                set_prefixed_attrs(cls, name, prefixes, default_value)
+            set_prefixed_attrs(cls, name, default_value)
         else:
-            if prefixes:
-                set_prefixed_attrs(cls, name, prefixes, default_value)
-            else:
-                setattr(cls, name, default_value)
+            set_prefixed_attrs(cls, name, default_value, prefix=prefix)
         return cls
     return decorator
 
@@ -104,15 +103,30 @@ def levelproperty(cls):
         properties=["getter", "setter"]
     )
 
-    cls.has_level = classmethod(lambda: True)
+    def new_class_generator(the_class=cls):
+        class new_class(the_class):
+            def __init__(self, *args, **kwargs):
+                super(new_class, self).__init__(*args, **kwargs)
 
-    return decorator(cls)
+            def __eq__(self, other):
+                state = super(new_class, self).__eq__(other)
+                try:
+                    state = state and (self.level == other.level)
+                except:
+                    pass
+                return state
+
+            @classmethod
+            def has_level():
+                return True
+        return new_class
+
+    return decorator(new_class_generator())
 
 
 class Item(object):
     """ A virtual class container for all Inventory item types """
     def __init__(self):
-        """ level: all items have a level... don't they? """
         self._shortcode = None
 
     def itemcount(self):
@@ -122,8 +136,7 @@ class Item(object):
         return 1
 
     def __eq__(self, other):
-        if (self.__class__ == other.__class__ and
-           self.level == other.level):
+        if (self.__class__ == other.__class__):
             return True
         return False
 
@@ -265,17 +278,22 @@ class Container(Item):
     def delete(self, item):
         try:
             for elem in self.contents:
-                try:
-                    # identify item by guid and remove it.
-                    if elem.guid == item.guid:
-                        self.contents.remove(elem)
-                        break
-                except AttributeError:
-                    if (item.__class__ == elem.__class__ and
-                       item.level == elem.level and
-                       item.rarity == elem.rarity):
-                        self.contents.remove(elem)
-                        break
+                if elem == item:
+                    self.contents.remove(elem)
+                    break
+
+                if False:
+                    try:
+                        # identify item by guid and remove it.
+                        if elem.guid == item.guid:
+                            self.contents.remove(elem)
+                            break
+                    except AttributeError:
+                        if (item.__class__ == elem.__class__ and
+                           item.level == elem.level and
+                           item.rarity == elem.rarity):
+                            self.contents.remove(elem)
+                            break
             else:
                 raise RuntimeError(
                     "Could not find item with guid {} in inventory".format(
