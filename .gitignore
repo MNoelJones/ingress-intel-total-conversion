@@ -13,3 +13,5 @@ generate_kml.py
 plugins/lib/jasmine_examples/*
 plugins/spec/helpers/jasmine_examples/
 plugins/spec/jasmine_examples/
+plugins/.jshintrc
+twistd.log
