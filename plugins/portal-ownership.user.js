@@ -143,10 +143,30 @@ window.plugin.ownership.updateChecksAndHighlights = function(guid) {
 
   if(window.plugin.ownership.isHighlightActive && portals[guid])
     window.setMarkerStyle (window.portals[guid], guid == window.selectedPortal);
-}
+};
+
+window.plugin.ownership.setMinResHealth = function(resonators) {
+  var maxresxm_by_level = {
+    1: 1000,
+    2: 1500,
+    3: 2000,
+    4: 2500,
+    5: 3000,
+    6: 4000,
+    7: 5000,
+    8: 6000,
+  };
+  var minreshealth = 0;
+  if (resonators.length > 0) {
+    minreshealth = Math.min.apply(
+      null, resonators.map(function(obj){ return Math.floor((obj.energy / maxresxm_by_level[obj.level]) * 100);})
+    );
+  }
+  return minreshealth;
+};
 
 window.plugin.ownership.updateOwned = function(owned, guid, portal) {
-  if(guid == undefined)
+  if(guid === undefined)
     guid = window.selectedPortal;
 
   var ownershipInfo = plugin.ownership.ownership[guid];
@@ -180,6 +200,9 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
           ownershipInfo.resonatorCount = portal.resCount;
           ownershipInfo.level = portal.level;
         }
+        if (portal.resonators.length > 0) {
+          ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
+        }
       }
     }
   }
@@ -190,7 +213,13 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
 
   plugin.ownership.updateChecksAndHighlights(guid);
   plugin.ownership.sync(guid);
-}
+};
+
+window.plugin.ownership.find_min_res_health = function(details) { 
+  return Math.min.apply(
+    null, details.resonators.map(function(obj){ return obj.energy;})
+  );
+};
 
 // stores the gived GUID for sync
 plugin.ownership.sync = function(guid) {
@@ -367,6 +396,7 @@ window.plugin.ownership.setupPortalsList = function() {
         $('[ownership-dialog-level="'+guid+'"]').css('background-color', COLORS_LVL[info.level]).text("L" + info.level);
         $('[ownership-dialog-health="'+guid+'"]').text(info.health + "%");
         $('[ownership-dialog-resonatorCount="'+guid+'"]').text(info.resonatorCount);
+        $('[ownership-dialog-minhealth="'+guid+'"]').text(info.minreshealth);
       }
     });
   });
@@ -481,6 +511,19 @@ window.plugin.ownership.fields = [
       var text = value ? (value + "%") : "-";
       $(cell)
         .attr('ownership-dialog-health', portalGUID)
+        .addClass("alignR")
+        .text(text);
+    },
+    defaultOrder: -1,
+  },
+  {
+    title: "Min Res Health",
+    value: function(portal) { return portal.minreshealth; },
+    sortValue: function(value, portal) { return value ? value : 0; },
+    format: function(cell, portalGUID, portal, value) {
+      var text = value ? (value) : "-";
+      $(cell)
+        .attr('ownership-dialog-minhealth', portalGUID)
         .addClass("alignR")
         .text(text);
     },
@@ -636,7 +679,7 @@ window.plugin.ownership.updatePortalFromRefreshAll = function(portalGUID) {
     window.plugin.ownership.updatingPortalGUID = null;
     return true;
   }
-}
+};
 
 window.plugin.ownership.portalTable = function(sortBy, sortOrder) {
   window.plugin.ownership.sortBy = sortBy;
