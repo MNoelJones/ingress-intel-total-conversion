@@ -13,3 +13,7 @@ generate_kml.py
 plugins/lib/jasmine_examples/*
 plugins/spec/helpers/jasmine_examples/
 plugins/spec/jasmine_examples/
+iitc_mnj.sublime-project
+iitc_mnj.sublime-workspace
+iitc_mnj_venv/
+twistd.log
