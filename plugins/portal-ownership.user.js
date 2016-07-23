@@ -187,6 +187,9 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
         ownershipInfo.latE6 = portal.latE6;
         ownershipInfo.lngE6 = portal.lngE6;
         ownershipInfo.health = portal.health;
+        if (portal.resonators) {
+          ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
+        };
         ownershipInfo.level = portal.level;
         ownershipInfo.resonatorCount = portal.resCount;
         ownershipInfo.recordedDate = Date.now();
@@ -200,7 +203,7 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
           ownershipInfo.resonatorCount = portal.resCount;
           ownershipInfo.level = portal.level;
         }
-        if (portal.resonators.length > 0) {
+        if (portal.resonators) {
           ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
         }
       }
