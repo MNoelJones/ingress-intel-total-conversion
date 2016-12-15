@@ -1,3 +1,4 @@
+"""Inventory.py - Module for recording Ingress inventory."""
 import re
 import sys
 
@@ -16,12 +17,14 @@ class _Pointer(object):
 
 
 def getter_factory(name, prefix="_", default_value=None):
+    """Factory method to define an attribute getter (for `name`) on a class."""
     def getter(self):
         return getattr(self, "{}{}".format(prefix, name), default_value)
     return getter
 
 
 def setter_factory(name, prefix="_"):
+    """Factory method to define an attribute getter (for `name`) on a class."""
     def setter(self, value):
         return setattr(self, "{}{}".format(prefix, name), value)
     return setter
@@ -33,6 +36,12 @@ def decorator_factory(
     properties=None,
     default_value=None
 ):
+    """
+    Factory method to add decorators for getters/setters on a class.
+    For attribute `name`.
+    `properties` should be a list of the strings "getter" and "setter"
+    `default` sets the optional default value in the setter
+    """
     def decorator(cls):
         def set_prefixed_attrs(cls, name, default_value, prefix=True):
             if prefix:
@@ -53,8 +62,8 @@ def decorator_factory(
 
         prop = property(getter, setter)
         if properties:
-            setattr(cls, name, prop)
             set_prefixed_attrs(cls, name, default_value)
+            setattr(cls, name, prop)
         else:
             set_prefixed_attrs(cls, name, default_value, prefix=prefix)
         return cls
@@ -62,9 +71,9 @@ def decorator_factory(
 
 
 def setshortcode(code):
+    """Create a decorator to add a shortcode value and getter to a class."""
     decorator = decorator_factory(
         "shortcode",
-        prefixes="_",
         default_value=code,
         properties=["getter"]
     )
@@ -73,21 +82,21 @@ def setshortcode(code):
 
 
 def guidproperty(cls):
+    """Create a decorator to add a guid value and getter to a class."""
     decorator = decorator_factory(
         "guid",
-        prefixes="_",
         properties=["getter", "setter"]
     )
 
-    cls.has_guid = classmethod(lambda: True)
+    cls.has_guid = classmethod(lambda cls: True)
 
     return decorator(cls)
 
 
 def rarityproperty(cls):
+    """Create a decorator to add a rarity value and getter to a class."""
     decorator = decorator_factory(
         "rarity",
-        prefixes="_",
         properties=["getter", "setter"]
     )
 
@@ -97,9 +106,9 @@ def rarityproperty(cls):
 
 
 def levelproperty(cls):
+    """Create a decorator to add a level value and getter to a class."""
     decorator = decorator_factory(
         "level",
-        prefixes="_",
         properties=["getter", "setter"]
     )
 
@@ -143,9 +152,11 @@ class Item(object):
 
 class Rarity(object):
     """
-        Some items have a Rarity value.
-        This is a virtual class for all Rarity levels
+    Some items have a Rarity value.
+
+    This is a virtual class for all Rarity levels
     """
+
     def __init__(self):
         self._shortcode = None
 
@@ -157,46 +168,49 @@ class Rarity(object):
 
 @setshortcode("C")
 class Common(Rarity):
-    """ Very Rare level rarity """
+    """Very Rare level rarity."""
+
     def __init__(self):
         super(Common, self).__init__()
 
 
 @setshortcode("VC")
 class VeryCommon(Rarity):
-    """ Very Common level rarity """
+    """Very Common level rarity."""
+
     def __init__(self):
         super(VeryCommon, self).__init__()
 
 
 @setshortcode("R")
 class Rare(Rarity):
-    """ Rare level rarity """
+    """Rare level rarity."""
+
     def __init__(self):
         super(Rare, self).__init__()
 
 
 @setshortcode("VR")
 class VeryRare(Rarity):
-    """ Very Rare level rarity """
+    """Very Rare level rarity."""
     def __init__(self):
         super(VeryRare, self).__init__()
 
 
 class Key(Item):
-    """ """
+    """Key Item."""
     def __init__(self):
         super(Key, self).__init__()
 
 
 class Media(Item):
-    """ """
+    """Media Item"""
     def __init__(self):
         super(Media, self).__init__()
 
 
 class Powerup(Item):
-    """ """
+    """Powerup Item"""
     def __init__(self):
         super(Powerup, self).__init__()
 
@@ -205,7 +219,7 @@ class Powerup(Item):
 @rarityproperty
 @setshortcode("P")
 class PowerCube(Item):
-    """ """
+    """Powercube Item"""
     def __init__(self):
         super(PowerCube, self).__init__()
 
@@ -214,7 +228,7 @@ class PowerCube(Item):
 @rarityproperty
 @setshortcode("R")
 class Resonator(Item):
-    """ """
+    """Resonator Item"""
     def __init__(self):
         super(Resonator, self).__init__()
         self.rarity = VeryCommon()
@@ -223,7 +237,7 @@ class Resonator(Item):
 @guidproperty
 @rarityproperty
 class Container(Item):
-    """ """
+    """Container Item"""
     def __init__(self, guid=None):
         super(Container, self).__init__()
         self._guid = guid or None
@@ -272,10 +286,15 @@ class Container(Item):
         return self.itemcount()
 
     def add(self, item):
+        """
+        Add item to contents.
+        ...as long as it's not on the _restricted_items list.
+        """
         assert(any([isinstance(item, x) for x in self._restricted_items]))
         self.contents.append(item)
 
     def delete(self, item):
+        """Delete item from inventory."""
         try:
             for elem in self.contents:
                 if elem == item:
@@ -305,7 +324,7 @@ class Container(Item):
 
 
 class MUFG(Container):
-    """ """
+    """MUFG container."""
     def __init__(self):
         super(Capsule, self).__init__()
         self._restricted_items = [
@@ -319,7 +338,7 @@ class MUFG(Container):
 
 
 class Capsule(Container):
-    """ """
+    """Capsule Container"""
     def __init__(self):
         super(Capsule, self).__init__()
         self._restricted_items = [
@@ -333,6 +352,7 @@ class Capsule(Container):
 
 
 class KeyCapsule(Container):
+    """KeyCapsule container."""
     def __init__(self):
         super(KeyCapsule, self).__init__()
         self._restricted_items = [
@@ -345,7 +365,7 @@ class KeyCapsule(Container):
 
 @rarityproperty
 class Weapon(Item):
-    """ """
+    """Weapon Item"""
     def __init__(self):
         super(Weapon, self).__init__()
         self.rarity = VeryCommon()
@@ -354,7 +374,7 @@ class Weapon(Item):
 @levelproperty
 @setshortcode("X")
 class Burster(Weapon):
-    """ """
+    """Burster Item."""
     def __init__(self):
         super(Burster, self).__init__()
 
@@ -362,20 +382,20 @@ class Burster(Weapon):
 @levelproperty
 @setshortcode("US")
 class Ultrastrike(Weapon):
-    """ """
+    """Ultrastrike Item."""
     def __init__(self):
         super(Ultrastrike, self).__init__()
 
 
 class Virus(Weapon):
-    """ """
+    """Virus Item."""
     def __init__(self):
         super(Virus, self).__init__()
         self.rarity = VeryRare()
 
 
 class Ada(Virus):
-    """ """
+    """Ada Item"""
     def __init__(self):
         super(Ada, self).__init__()
 
