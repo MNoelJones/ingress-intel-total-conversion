@@ -7,14 +7,14 @@
 // @updateURL      @@UPDATEURL@@
 // @downloadURL    @@DOWNLOADURL@@
 // @description    [@@BUILDNAME@@-@@BUILDDATE@@] Allow drawing things onto the current map so you may plan your next move.
-// @include        https://www.ingress.com/intel*
-// @include        http://www.ingress.com/intel*
-// @match          https://www.ingress.com/intel*
-// @match          http://www.ingress.com/intel*
-// @include        https://www.ingress.com/mission/*
-// @include        http://www.ingress.com/mission/*
-// @match          https://www.ingress.com/mission/*
-// @match          http://www.ingress.com/mission/*
+// @include        https://*.ingress.com/intel*
+// @include        http://*.ingress.com/intel*
+// @match          https://*.ingress.com/intel*
+// @match          http://*.ingress.com/intel*
+// @include        https://*.ingress.com/mission/*
+// @include        http://*.ingress.com/mission/*
+// @match          https://*.ingress.com/mission/*
+// @match          http://*.ingress.com/mission/*
 // @grant          none
 // ==/UserScript==
 
@@ -297,11 +297,11 @@ window.plugin.drawTools.setOptions = function() {
 window.plugin.drawTools.setDrawColor = function(color) {
   window.plugin.drawTools.currentColor = color;
   window.plugin.drawTools.currentMarker = window.plugin.drawTools.getMarkerIcon(color);
-  
+
   window.plugin.drawTools.lineOptions.color = color;
   window.plugin.drawTools.polygonOptions.color = color;
   window.plugin.drawTools.markerOptions.icon = window.plugin.drawTools.currentMarker;
-  
+
   plugin.drawTools.drawControl.setDrawingOptions({
     polygon:  { shapeOptions: plugin.drawTools.polygonOptions },
     polyline: { shapeOptions: plugin.drawTools.lineOptions },
@@ -509,6 +509,7 @@ window.plugin.drawTools.manualOpt = function() {
     showInput: false,
     showButtons: false,
     showPalette: true,
+    showPaletteOnly: false,
     showSelectionPalette: false,
     palette: [ ['#a24ac3','#514ac3','#4aa8c3','#51c34a'],
                ['#c1c34a','#c38a4a','#c34a4a','#c34a6f'],
@@ -595,7 +596,7 @@ window.plugin.drawTools.optPaste = function() {
     try {
       // first see if it looks like a URL-format stock intel link, and if so, try and parse out any stock drawn items
       // from the pls parameter
-      if (promptAction.match(new RegExp("^(https?://)?(www\\.)ingress\\.com/intel.*[?&]pls="))) {
+      if (promptAction.match(new RegExp("^(https?://)?(www\\.)?ingress\\.com/intel.*[?&]pls="))) {
         //looks like a ingress URL that has drawn items...
         var items = promptAction.split(/[?&]/);
         var foundAt = -1;
