@@ -6,6 +6,7 @@ localbuildsettings.py
 *.bak
 *.project
 .pydevproject
+.DS_Store
 twistd.pid
 temp.csv
 dump.kml
