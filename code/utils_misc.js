@@ -38,7 +38,7 @@ window.aboutIITC = function() {
   '  <div>Ingress Intel Total Conversion</div> '                                     +
   '  <hr>'                                                                           +
   '  <div>'                                                                          +
-  '    <a href="http://iitc.jonatkins.com/" target="_blank">IITC Homepage</a><br />' +
+  '    <a href="http://iitc.me/" target="_blank">IITC Homepage</a><br />' +
   '     On the script’s homepage you can:'                                           +
   '     <ul>'                                                                        +
   '       <li>Find Updates</li>'                                                     +
@@ -147,7 +147,7 @@ window.zeroPad = function(number,pad) {
 window.unixTimeToString = function(time, full) {
   if(!time) return null;
   var d = new Date(typeof time === 'string' ? parseInt(time) : time);
-  time = d.toLocaleTimeString();
+  var time = d.toLocaleTimeString();
   //  var time = zeroPad(d.getHours(),2)+':'+zeroPad(d.getMinutes(),2)+':'+zeroPad(d.getSeconds(),2);
   var date = d.getFullYear()+'-'+zeroPad(d.getMonth()+1,2)+'-'+zeroPad(d.getDate(),2);
   if(typeof full !== 'undefined' && full) return date + ' ' + time;
