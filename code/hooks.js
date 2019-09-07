@@ -64,11 +64,11 @@ window.VALID_HOOKS = [
   'portalDetailsUpdated',
   'mapDataRefreshStart',
   'mapDataEntityInject',
-  'portalRemoved', 'linkRemoved', 'fieldRemoved',
   'mapDataRefreshEnd',
   'portalAdded',
   'linkAdded',
   'fieldAdded',
+  'portalRemoved', 'linkRemoved', 'fieldRemoved',
   'publicChatDataAvailable',
   'factionChatDataAvailable',
   'requestFinished',
@@ -77,8 +77,8 @@ window.VALID_HOOKS = [
   'search',
   'iitcLoaded',
   'portalDetailLoaded',
-  'paneChanged',
-  'artifactsUpdated'];
+  'paneChanged'
+  ];
 
 window.runHooks = function(event, data) {
   if(VALID_HOOKS.indexOf(event) === -1) throw('Unknown event type: ' + event);

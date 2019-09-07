@@ -6,18 +6,7 @@ localbuildsettings.py
 *.bak
 *.project
 .pydevproject
-twistd.pid
-temp.csv
-dump.kml
-generate_kml.py
-plugins/lib/jasmine_examples/*
-plugins/spec/helpers/jasmine_examples/
-plugins/spec/jasmine_examples/
-plugins/.jshintrc
-iitc_mnj.sublime-project
-iitc_mnj.sublime-workspace
-iitc_mnj_venv/
-twistd.log
+.DS_Store
 
 ### JetBrains IDE Ignores ###
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio and Webstorm
@@ -37,3 +26,4 @@ twistd.log
 .idea/sqlDataSources.xml
 .idea/dynamic.xml
 .idea/uiDesigner.xml
+twistd.log

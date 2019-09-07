@@ -113,8 +113,8 @@ plugin.layerCount.pnpoly = function(latlngs, point) {
 plugin.layerCount.calculate = function(ev) {
 	var layersEnl, layersRes, point, fields, content;
 	point = ev.latlng;
-	var layersRes = layersEnl = layersDrawn = 0;
-	layersRes = layersEnl = 0;
+	fields = window.fields;
+	layersRes = layersEnl = layersDrawn = 0;
 
 	for(var guid in fields) {
 		var field = fields[guid];
@@ -137,12 +137,12 @@ plugin.layerCount.calculate = function(ev) {
 		}
 	}
 
-	if(layersRes != 0 && layersEnl != 0)
-		var content = "Res: " + layersRes + " + Enl: " + layersEnl + " = " + (layersRes + layersEnl) + " fields";
-	else if(layersRes != 0)
-		var content = "Res: " + layersRes + " field(s)";
-	else if(layersEnl != 0)
-		var content = "Enl: " + layersEnl + " field(s)";
+	if(layersRes !== 0 && layersEnl !== 0)
+		content = "Res: " + layersRes + " + Enl: " + layersEnl + " = " + (layersRes + layersEnl) + " fields";
+	else if(layersRes !== 0)
+		content = "Res: " + layersRes + " field(s)";
+	else if(layersEnl !== 0)
+		content = "Enl: " + layersEnl + " field(s)";
 	else
 		content = "No fields";
 
