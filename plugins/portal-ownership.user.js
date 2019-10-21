@@ -7,10 +7,10 @@
 // @updateURL      @@UPDATEURL@@
 // @downloadURL    @@DOWNLOADURL@@
 // @description    [@@BUILDNAME@@-@@BUILDDATE@@] Allow manual entry of currently owned portals. Sync-enabled and owned portal data will be shared between browsers/mobile. Will try to guess portal ownership if COMM is available.  Highlights owned/unowned portals. Works with/without the uniques plugin, on which it is based. Also provides a list of owned portals, through which the length of ownership can be modified.
-// @include        https://www.ingress.com/intel*
-// @include        http://www.ingress.com/intel*
-// @match          https://www.ingress.com/intel*
-// @match          http://www.ingress.com/intel*
+// @include        https://*ingress.com/intel*
+// @include        http://*ingress.com/intel*
+// @match          https://*ingress.com/intel*
+// @match          http://*ingress.com/intel*
 // @grant          none
 // ==/UserScript==
 
@@ -295,7 +295,7 @@ window.plugin.ownership.syncCallback = function(pluginName, fieldName, e, fullUp
 //syncing of the field is initialed, upload all queued update
 window.plugin.ownership.syncInitialed = function(pluginName, fieldName) {
   if(fieldName === 'ownership'){
-    plugin.ownership.enableSync = true;
+    // plugin.ownership.enableSync = true;
     if(Object.keys(plugin.ownership.updateQueue).length > 0)
       plugin.ownership.syncQueue();
   }
