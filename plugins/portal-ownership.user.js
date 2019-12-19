@@ -103,7 +103,7 @@ window.plugin.ownership.onPublicChatDataAvailable = function(data) {
         owned = false;
 
     if(plext.plextType == 'SYSTEM_BROADCAST'
-		  && markup.length==3
+      && markup.length==3
       && markup[0][0] == 'PLAYER'
       && markup[0][1].plain == window.PLAYER.nickname
       && markup[1][0] == 'TEXT'
@@ -121,7 +121,7 @@ window.plugin.ownership.onPublicChatDataAvailable = function(data) {
       && (markup[2][1].plain == ' neutralized by ')
       && markup[3][0] == 'PLAYER') {
         // An owned portal has become neutralized
-			  portal = markup[1][1];
+        portal = markup[1][1];
     }
 
     if(portal){
@@ -143,6 +143,27 @@ window.plugin.ownership.updateChecksAndHighlights = function(guid) {
 
   if(window.plugin.ownership.isHighlightActive && portals[guid])
     window.setMarkerStyle (window.portals[guid], guid == window.selectedPortal);
+};
+
+window.plugin.ownership.setDaysToDecay = function(resonators) {
+  var maxresxm_by_level = {
+    1: 1000,
+    2: 1500,
+    3: 2000,
+    4: 2500,
+    5: 3000,
+    6: 4000,
+    7: 5000,
+    8: 6000,
+  };
+  console.log("Running setDaysToDecay");
+  var daystodecay = 0;
+  if (resonators.length > 0) {
+    daystodecay = Math.floor(Math.min.apply(
+        null, resonators.map(function(obj){ return Math.floor((obj.energy / maxresxm_by_level[obj.level]) * 100) / 15;})
+      ));
+  }
+  return daystodecay;
 };
 
 window.plugin.ownership.setMinResHealth = function(resonators) {
@@ -188,7 +209,9 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
         ownershipInfo.lngE6 = portal.lngE6;
         ownershipInfo.health = portal.health;
         if (portal.resonators) {
+          console.log("Setting minreshealth & daystodecay");
           ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
+          ownershipInfo.daystodecay = window.plugin.ownership.setDaysToDecay(portal.resonators);
         };
         ownershipInfo.level = portal.level;
         ownershipInfo.resonatorCount = portal.resCount;
@@ -204,7 +227,9 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
           ownershipInfo.level = portal.level;
         }
         if (portal.resonators) {
+          console.log("Setting minreshealth & daystodecay");
           ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
+          ownershipInfo.daystodecay = window.plugin.ownership.setDaysToDecay(portal.resonators);
         }
       }
     }
@@ -236,9 +261,9 @@ plugin.ownership.sync = function(guid) {
 window.plugin.ownership.syncQueue = function() {
   if(!plugin.ownership.enableSync)
     return;
-	
+  
   clearTimeout(plugin.ownership.syncTimer);
-	
+  
   plugin.ownership.syncTimer = setTimeout(function() {
     plugin.ownership.syncTimer = null;
 
@@ -349,7 +374,7 @@ window.plugin.ownership.highlighter = {
 window.plugin.ownership.setupCSS = function() {
   $("<style>")
     .prop("type", "text/css")
-    .html("@@INCLUDESTRING:plugins/portal-ownership.css@@")
+    .html("/* Based on the css of the uniques-plugin */\n\n#ownership-container {\n    display: block;\n    width: 100%;\n    text-align: center;\n    margin-top: 6px;\n    margin-bottom: 1px;\n    margin-left: auto !important;\n    margin-right: auto !important;\n    padding: 0 4px;\n}\n\n#ownership-container label {\n  margin: 0 0.5em;\n}\n\n#ownership-container input {\n  vertical-align: middle;\n}\n\ntd.portal-list-ownership {\n    text-align: center;\n}\n\n.portal-list-ownership input[type=\'checkbox\'] {\n  padding: 0;\n  height: auto;\n  margin-top: -5px;\n  margin-bottom: -5px;\n}\n\n/* Based on the css of the portals-list plugin */\n\n#ownershiplist.mobile {\n  background: transparent;\n  border: 0 none !important;\n  height: 100% !important;\n  width: 100% !important;\n  left: 0 !important;\n  top: 0 !important;\n  position: absolute;\n  overflow: auto;\n}\n\n#ownershiplist table {\n  margin-top: 5px;\n  border-collapse: collapse;\n  empty-cells: show;\n  width: 100%;\n  clear: both;\n}\n\n#ownershiplist table td, #ownershiplist table th {\n  background-color: #1b415e;\n  border-bottom: 1px solid #0b314e;\n  color: white;\n  padding: 3px;\n}\n\n#ownershiplist table th {\n  text-align: center;\n}\n\n#ownershiplist table .alignR {\n  text-align: right;\n}\n\n#ownershiplist table .alignL {\n  text-align: left;\n}\n\n#ownershiplist table.portals td {\n  white-space: nowrap;\n}\n\n#ownershiplist table th.sortable {\n  cursor: pointer;\n}\n\n#ownershiplist table .portalTitle {\n  min-width: 120px !important;\n  max-width: 240px !important;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n\n#ownershiplist .sorted {\n  color: #FFCE00;\n}\n\n#ownershiplist table.filter {\n  table-layout: fixed;\n  cursor: pointer;\n  border-collapse: separate;\n  border-spacing: 1px;\n}\n\n#ownershiplist table.filter th {\n  text-align: left;\n  padding-left: 0.3em;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n#ownershiplist table.filter td {\n  text-align: right;\n  padding-right: 0.3em;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n#ownershiplist .filterNeu {\n  background-color: #666;\n}\n\n#ownershiplist table tr.res td, #ownershiplist .filterRes {\n  background-color: #005684;\n}\n\n#ownershiplist table tr.enl td, #ownershiplist .filterEnl {\n  background-color: #017f01;\n}\n\n#ownershiplist table tr.none td {\n  background-color: #000;\n}\n\n#ownershiplist table tr.updating {\n  border: 1px solid #FFCE00;\n}\n\n#ownershiplist .information {\n  margin-top: 10px;\n  font-size: 10px;\n}\n\n#ownershiplist.mobile table.filter tr {\n  display: block;\n  text-align: center;\n}\n#ownershiplist.mobile table.filter th, #ownershiplist.mobile table.filter td {\n  display: inline-block;\n  width: 22%;\n}")
     .appendTo("head");
 }
 
@@ -400,6 +425,7 @@ window.plugin.ownership.setupPortalsList = function() {
         $('[ownership-dialog-health="'+guid+'"]').text(info.health + "%");
         $('[ownership-dialog-resonatorCount="'+guid+'"]').text(info.resonatorCount);
         $('[ownership-dialog-minhealth="'+guid+'"]').text(info.minreshealth);
+        $('[ownership-dialog-dtdecay="'+guid+'"]').text(info.daystodecay);
       }
     });
   });
@@ -410,7 +436,7 @@ window.plugin.ownership.setupPortalsList = function() {
     if(info && info.owned)
       return 1;
     return 0;
-	}
+  }
 
   var ownershipField = {
     title: "Owner",
@@ -527,6 +553,19 @@ window.plugin.ownership.fields = [
       var text = value ? (value) : "-";
       $(cell)
         .attr('ownership-dialog-minhealth', portalGUID)
+        .addClass("alignR")
+        .text(text);
+    },
+    defaultOrder: -1,
+  },
+  {
+    title: "Days to Decay",
+    value: function(portal) { return portal.daystodecay; },
+    sortValue: function(value, portal) { return value !== undefined ? `${value}${portal.title}`.toLowerCase() : `${portal.title}`.toLowerCase(); },
+    format: function(cell, portalGUID, portal, value) {
+      var text = value !== undefined ? (value) : "-";
+      $(cell)
+        .attr('ownership-dialog-dtdecay', portalGUID)
         .addClass("alignR")
         .text(text);
     },
@@ -836,5 +875,4 @@ var setup = function() {
 }
 
 //PLUGIN END //////////////////////////////////////////////////////////
-
 @@PLUGINEND@@
