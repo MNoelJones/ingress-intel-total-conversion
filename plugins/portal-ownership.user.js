@@ -62,10 +62,18 @@ window.plugin.ownership.daysOwnedByPortal = function(portal) {
   return 0;
 }
 
-window.plugin.ownership.setPortalOwnershipDate = function(guid,numberOfDaysOwned) {
+window.plugin.ownership.setPortalOwnershipDate = function(guid, numberOfDaysOwned) {
   var portalInfo = window.plugin.ownership.ownership[guid];
   if(portalInfo) {
     portalInfo.recordedDate = Date.now() - numberOfDaysOwned * 86400000;
+    plugin.ownership.sync(guid);
+  }
+}
+
+window.plugin.ownership.setUpdatedDate = function(guid) {
+  var portalInfo = window.plugin.ownership.ownership[guid];
+  if (portalInfo) {
+    portalInfo.updatedDate = Date.now();
     plugin.ownership.sync(guid);
   }
 }
@@ -83,7 +91,10 @@ window.plugin.ownership.onPortalDetailsUpdated = function() {
       nickname = window.PLAYER.nickname;
 
   if(details)
+  {
     plugin.ownership.updateOwned(details.owner == nickname);
+    plugin.ownership.setUpdatedDate(guid);
+  }
 
   if($('#uniques-container').length) // If iitc-plugin-uniques is enabled, embed ownership data alongside unique data
     $('#uniques-container > label:first').before(plugin.ownership.labelContentHTML);
@@ -508,6 +519,27 @@ window.plugin.ownership.sortOrder = -1;
  *     Which order should by default be used for this column. -1 means descending. Default: 1
  */
 
+window.plugin.ownership.formatDiffDate = function (date) {
+  if (date === undefined || isNaN(date)) {
+    return "-";
+  }
+  let diff = Date.now() - date; // the difference in seconds
+  console.log("formatDiffDate(" + date + ") = " + diff);
+
+  if (diff < 3600000) { // less than 1 hour
+    return '0H';
+  }
+
+  let hours = Math.floor(diff / 3600000); // convert diff to hours
+
+  if (hours < 24) {
+    return hours + 'H';
+  }
+
+  let days = Math.floor(hours / 24); // convert hours to days
+  let rhours = hours - (days * 24);
+  return days + 'D ' + rhours + 'H';
+}
 
 window.plugin.ownership.fields = [
   {
@@ -605,12 +637,21 @@ window.plugin.ownership.fields = [
     },
     defaultOrder: -1,
   },
+  {
+    title: "Days/Hours since update",
+    value: function(portal) { 
+      return window.plugin.ownership.formatDiffDate(portal.updatedDate);
+    },
+    format: false,
+    defaultOrder: -1,
+  },
 ];
 
 window.plugin.ownership.resetOwnedPortalsList = function() {
   window.plugin.ownership.getPortals();
   $('#ownershiplist').empty().append(window.plugin.ownership.portalTable(window.plugin.ownership.sortBy, window.plugin.ownership.sortOrder));
 }
+
 
 // Construct the set of portals to be used, based on data obtained from the set of 'owned' portals.
 window.plugin.ownership.getPortals = function() {
