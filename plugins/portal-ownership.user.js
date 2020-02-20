@@ -639,6 +639,9 @@ window.plugin.ownership.fields = [
   },
   {
     title: "Days/Hours since update",
+    sortValue: function(value, portal) {
+      return portal.updatedDate;
+    },
     value: function(portal) { 
       return window.plugin.ownership.formatDiffDate(portal.updatedDate);
     },
