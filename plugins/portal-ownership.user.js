@@ -54,13 +54,13 @@ window.plugin.ownership.daysOwnedByGUID = function(guid) {
   if(portalInfo)
     return window.plugin.ownership.daysOwnedByPortal(portalInfo);
   return 0;
-}
+};
 
 window.plugin.ownership.daysOwnedByPortal = function(portal) {
   if(portal && portal.owned && portal.recordedDate)
     return Math.round((Date.now() - portal.recordedDate) / 86400000);
   return 0;
-}
+};
 
 window.plugin.ownership.setPortalOwnershipDate = function(guid, numberOfDaysOwned) {
   var portalInfo = window.plugin.ownership.ownership[guid];
@@ -68,7 +68,7 @@ window.plugin.ownership.setPortalOwnershipDate = function(guid, numberOfDaysOwne
     portalInfo.recordedDate = Date.now() - numberOfDaysOwned * 86400000;
     plugin.ownership.sync(guid);
   }
-}
+};
 
 window.plugin.ownership.setUpdatedDate = function(guid) {
   var portalInfo = window.plugin.ownership.ownership[guid];
@@ -76,7 +76,7 @@ window.plugin.ownership.setUpdatedDate = function(guid) {
     portalInfo.updatedDate = Date.now();
     plugin.ownership.sync(guid);
   }
-}
+};
 
 window.plugin.ownership.onPortalDetailsUpdated = function() {
 
@@ -103,34 +103,36 @@ window.plugin.ownership.onPortalDetailsUpdated = function() {
 
   // Update portal-list data
   plugin.ownership.updateChecksAndHighlights(guid);
-}
+};
 
 window.plugin.ownership.onPublicChatDataAvailable = function(data) {
   data.result.forEach(function(msg) {
     var plext = msg[2].plext,
-        markup = plext.markup
+        markup = plext.markup,
         portal = null,
         guid = null,
         owned = false;
 
-    if(plext.plextType == 'SYSTEM_BROADCAST'
-      && markup.length==3
-      && markup[0][0] == 'PLAYER'
-      && markup[0][1].plain == window.PLAYER.nickname
-      && markup[1][0] == 'TEXT'
-      && markup[1][1].plain == ' captured '
-      && markup[2][0] == 'PORTAL') {
+    if(
+      plext.plextType == 'SYSTEM_BROADCAST'&&
+      markup.length==3 &&
+      markup[0][0] == 'PLAYER'&&
+      markup[0][1].plain == window.PLAYER.nickname &&
+      markup[1][0] == 'TEXT'&&
+      markup[1][1].plain == ' captured '&&
+      markup[2][0] == 'PORTAL') {
         // Player has captured a portal within the bounded area
         portal = markup[2][1];
         owned = true;
-    } else if(plext.plextType == 'SYSTEM_NARROWCAST'
-      && markup.length==4
-      && markup[0][0] == 'TEXT'
-      && markup[0][1].plain == 'Your Portal '
-      && markup[1][0] == 'PORTAL'
-      && markup[2][0] == 'TEXT'
-      && (markup[2][1].plain == ' neutralized by ')
-      && markup[3][0] == 'PLAYER') {
+    } else if(
+      plext.plextType == 'SYSTEM_NARROWCAST'&&
+      markup.length==4 &&
+      markup[0][0] == 'TEXT'&&
+      markup[0][1].plain == 'Your Portal '&&
+      markup[1][0] == 'PORTAL'&&
+      markup[2][0] == 'TEXT'&&
+      (markup[2][1].plain == ' neutralized by ') &&
+      markup[3][0] == 'PLAYER') {
         // An owned portal has become neutralized
         portal = markup[1][1];
     }
@@ -141,7 +143,7 @@ window.plugin.ownership.onPublicChatDataAvailable = function(data) {
         plugin.ownership.updateOwned(owned,guid,portal);
     }
   });
-}
+};
 
 window.plugin.ownership.updateChecksAndHighlights = function(guid) {
   runHooks('pluginOwnershipUpdateOwnership', { guid: guid });
@@ -223,7 +225,7 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
           console.log("Setting minreshealth & daystodecay");
           ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
           ownershipInfo.daystodecay = window.plugin.ownership.setDaysToDecay(portal.resonators);
-        };
+        }
         ownershipInfo.level = portal.level;
         ownershipInfo.resonatorCount = portal.resCount;
         ownershipInfo.recordedDate = Date.now();
@@ -266,7 +268,7 @@ plugin.ownership.sync = function(guid) {
   plugin.ownership.storeLocal('ownership');
   plugin.ownership.storeLocal('updateQueue');
   plugin.ownership.syncQueue();
-}
+};
 
 // sync the queue, but delay the actual sync to group a few updates in a single request
 window.plugin.ownership.syncQueue = function() {
@@ -285,14 +287,14 @@ window.plugin.ownership.syncQueue = function() {
 
     plugin.sync.updateMap('ownership', 'ownership', Object.keys(plugin.ownership.updatingQueue));
   }, plugin.ownership.SYNC_DELAY);
-}
+};
 
 //Call after IITC and all plugin loaded
 window.plugin.ownership.registerFieldForSyncing = function() {
   if(!window.plugin.sync)
     return;
   window.plugin.sync.registerMapForSync('ownership', 'ownership', window.plugin.ownership.syncCallback, window.plugin.ownership.syncInitialed);
-}
+};
 
 //Call after local or remote change uploaded
 window.plugin.ownership.syncCallback = function(pluginName, fieldName, e, fullUpdated) {
@@ -326,7 +328,7 @@ window.plugin.ownership.syncCallback = function(pluginName, fieldName, e, fullUp
       window.runHooks('pluginOwnershipUpdateOwnership', {guid: e.property});
     }
   }
-}
+};
 
 //syncing of the field is initialed, upload all queued update
 window.plugin.ownership.syncInitialed = function(pluginName, fieldName) {
@@ -335,7 +337,7 @@ window.plugin.ownership.syncInitialed = function(pluginName, fieldName) {
     if(Object.keys(plugin.ownership.updateQueue).length > 0)
       plugin.ownership.syncQueue();
   }
-}
+};
 
 window.plugin.ownership.storeLocal = function(name) {
   var key = window.plugin.ownership.FIELDS[name];
@@ -348,7 +350,7 @@ window.plugin.ownership.storeLocal = function(name) {
     localStorage[key] = JSON.stringify(plugin.ownership[name]);
   else
     localStorage.removeItem(key);
-}
+};
 
 window.plugin.ownership.loadLocal = function(name) {
   var key = window.plugin.ownership.FIELDS[name];
@@ -357,7 +359,7 @@ window.plugin.ownership.loadLocal = function(name) {
 
   if(localStorage[key] !== undefined)
     plugin.ownership[name] = JSON.parse(localStorage[key]);
-}
+};
 
 window.plugin.ownership.highlighter = {
   highlight: function(data) {
@@ -380,22 +382,22 @@ window.plugin.ownership.highlighter = {
   setSelected: function(active) {
     window.plugin.ownership.isHighlightActive = active;
   }
-}
+};
 
 window.plugin.ownership.setupCSS = function() {
   $("<style>")
     .prop("type", "text/css")
     .html("/* Based on the css of the uniques-plugin */\n\n#ownership-container {\n    display: block;\n    width: 100%;\n    text-align: center;\n    margin-top: 6px;\n    margin-bottom: 1px;\n    margin-left: auto !important;\n    margin-right: auto !important;\n    padding: 0 4px;\n}\n\n#ownership-container label {\n  margin: 0 0.5em;\n}\n\n#ownership-container input {\n  vertical-align: middle;\n}\n\ntd.portal-list-ownership {\n    text-align: center;\n}\n\n.portal-list-ownership input[type=\'checkbox\'] {\n  padding: 0;\n  height: auto;\n  margin-top: -5px;\n  margin-bottom: -5px;\n}\n\n/* Based on the css of the portals-list plugin */\n\n#ownershiplist.mobile {\n  background: transparent;\n  border: 0 none !important;\n  height: 100% !important;\n  width: 100% !important;\n  left: 0 !important;\n  top: 0 !important;\n  position: absolute;\n  overflow: auto;\n}\n\n#ownershiplist table {\n  margin-top: 5px;\n  border-collapse: collapse;\n  empty-cells: show;\n  width: 100%;\n  clear: both;\n}\n\n#ownershiplist table td, #ownershiplist table th {\n  background-color: #1b415e;\n  border-bottom: 1px solid #0b314e;\n  color: white;\n  padding: 3px;\n}\n\n#ownershiplist table th {\n  text-align: center;\n}\n\n#ownershiplist table .alignR {\n  text-align: right;\n}\n\n#ownershiplist table .alignL {\n  text-align: left;\n}\n\n#ownershiplist table.portals td {\n  white-space: nowrap;\n}\n\n#ownershiplist table th.sortable {\n  cursor: pointer;\n}\n\n#ownershiplist table .portalTitle {\n  min-width: 120px !important;\n  max-width: 240px !important;\n  overflow: hidden;\n  white-space: nowrap;\n  text-overflow: ellipsis;\n}\n\n#ownershiplist .sorted {\n  color: #FFCE00;\n}\n\n#ownershiplist table.filter {\n  table-layout: fixed;\n  cursor: pointer;\n  border-collapse: separate;\n  border-spacing: 1px;\n}\n\n#ownershiplist table.filter th {\n  text-align: left;\n  padding-left: 0.3em;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n#ownershiplist table.filter td {\n  text-align: right;\n  padding-right: 0.3em;\n  overflow: hidden;\n  text-overflow: ellipsis;\n}\n\n#ownershiplist .filterNeu {\n  background-color: #666;\n}\n\n#ownershiplist table tr.res td, #ownershiplist .filterRes {\n  background-color: #005684;\n}\n\n#ownershiplist table tr.enl td, #ownershiplist .filterEnl {\n  background-color: #017f01;\n}\n\n#ownershiplist table tr.none td {\n  background-color: #000;\n}\n\n#ownershiplist table tr.updating {\n  border: 1px solid #FFCE00;\n}\n\n#ownershiplist .information {\n  margin-top: 10px;\n  font-size: 10px;\n}\n\n#ownershiplist.mobile table.filter tr {\n  display: block;\n  text-align: center;\n}\n#ownershiplist.mobile table.filter th, #ownershiplist.mobile table.filter td {\n  display: inline-block;\n  width: 22%;\n}")
     .appendTo("head");
-}
+};
 
 window.plugin.ownership.setupContent = function() {
   plugin.ownership.labelContentHTML = '<label><input type="checkbox" id="owned" onclick="window.plugin.ownership.updateOwned($(this).prop(\'checked\'))"> Owner</label>';
-  plugin.ownership.contentHTML = '<div id="ownership-container">'
-    + plugin.ownership.labelContentHTML
-    + '</div>';
+  plugin.ownership.contentHTML = '<div id="ownership-container">' +
+    plugin.ownership.labelContentHTML +
+    '</div>';
   plugin.ownership.disabledMessage = '<div id="ownership-container" class="help" title="Your browser does not support localStorage">Ownership plugin disabled</div>';
-}
+};
 
 window.plugin.ownership.setupPortalsList = function() {
   if(!window.plugin.portalslist)
@@ -478,7 +480,7 @@ window.plugin.ownership.setupPortalsList = function() {
           return false;
         }, false);
       },
-    }
+    };
 
     // Ensure that the ownership field appears after the uniques field.
     if(window.plugin.uniques) {
@@ -494,7 +496,7 @@ window.plugin.ownership.setupPortalsList = function() {
     }
     else // Uniques isn't defined (yet?)
       window.plugin.portalslist.fields.push(ownershipField);
-}
+};
 
 // Owned Portal List Begin
 window.plugin.ownership.listPortals = [];
@@ -519,27 +521,40 @@ window.plugin.ownership.sortOrder = -1;
  *     Which order should by default be used for this column. -1 means descending. Default: 1
  */
 
+window.plugin.ownership.diffDate = function(date) {
+  let rdays = NaN;
+  let rhours = NaN;
+
+  if (!(date === undefined || isNaN(date))) {
+    let diff = Date.now() - date; // the difference in seconds
+
+    if (diff < 3600000) { // less than 1 hour
+      rhours = 0;
+    } else {
+      let hours = Math.floor(diff / 3600000); // convert diff to hours
+
+      if (hours < 24) {
+        rhours = hours;
+      } else {
+        rdays = Math.floor(hours / 24); // convert hours to days
+        rhours = hours - (rdays * 24);
+      }
+    }
+  }
+  return {days: rdays, hours: rhours};
+};
+
 window.plugin.ownership.formatDiffDate = function (date) {
-  if (date === undefined || isNaN(date)) {
-    return "-";
+  let resp = window.plugin.ownership.diffDate(date);
+  if (isNaN(resp.days)){
+    if (isNaN(resp.hours)) {
+      return "-";
+    } else {
+      return `${resp.hours}H`;
+    }
   }
-  let diff = Date.now() - date; // the difference in seconds
-  console.log("formatDiffDate(" + date + ") = " + diff);
-
-  if (diff < 3600000) { // less than 1 hour
-    return '0H';
-  }
-
-  let hours = Math.floor(diff / 3600000); // convert diff to hours
-
-  if (hours < 24) {
-    return hours + 'H';
-  }
-
-  let days = Math.floor(hours / 24); // convert hours to days
-  let rhours = hours - (days * 24);
-  return days + 'D ' + rhours + 'H';
-}
+  return `${resp.days}D ${resp.hours}H`;
+};
 
 window.plugin.ownership.fields = [
   {
@@ -604,7 +619,38 @@ window.plugin.ownership.fields = [
     defaultOrder: -1,
   },
   {
-    title: "Resonators",
+    title: "Estimated Days to Decay",
+    value: function(portal) {
+      let resp = window.plugin.ownership.diffDate(portal.updatedDate);
+      console.log(`resp: ${JSON.stringify(resp)}`);
+      if (isNaN(resp.days)) {
+        return portal.daystodecay;
+      }
+      return portal.daystodecay - resp.days;
+    },
+    sortValue: function(value, portal) {
+      return value !== undefined ? `${value}${portal.title}`.toLowerCase() : `${portal.title}`.toLowerCase();
+    },
+    format: function(cell, portalGUID, portal, value) {
+      var text = value !== undefined ? (value) : "-";
+      $(cell)
+        .attr('ownership-dialog-edtdecay', portalGUID)
+        .addClass("alignR")
+        .text(text);
+    },
+  },
+  {
+    title: "Time since update",
+    sortValue: function(value, portal) {
+      return portal.updatedDate;
+    },
+    value: function(portal) { 
+      return window.plugin.ownership.formatDiffDate(portal.updatedDate);
+    },
+    format: false,
+    defaultOrder: -1,
+  },  {
+    title: "Resos",
     value: function(portal) { return portal.resonatorCount; },
     format: function(cell, portalGUID, portal, value) {
       var text = value ? value : "-";
@@ -617,7 +663,7 @@ window.plugin.ownership.fields = [
   },
   {
     title: "Days Owned",
-    value: function(portal) { return window.plugin.ownership.daysOwnedByPortal(portal)},
+    value: function(portal) { return window.plugin.ownership.daysOwnedByPortal(portal); },
     format: function(cell, guid, portal, value) {
       $(cell)
         .addClass("alignR")
@@ -637,23 +683,13 @@ window.plugin.ownership.fields = [
     },
     defaultOrder: -1,
   },
-  {
-    title: "Days/Hours since update",
-    sortValue: function(value, portal) {
-      return portal.updatedDate;
-    },
-    value: function(portal) { 
-      return window.plugin.ownership.formatDiffDate(portal.updatedDate);
-    },
-    format: false,
-    defaultOrder: -1,
-  },
+
 ];
 
 window.plugin.ownership.resetOwnedPortalsList = function() {
   window.plugin.ownership.getPortals();
   $('#ownershiplist').empty().append(window.plugin.ownership.portalTable(window.plugin.ownership.sortBy, window.plugin.ownership.sortOrder));
-}
+};
 
 
 // Construct the set of portals to be used, based on data obtained from the set of 'owned' portals.
@@ -703,7 +739,7 @@ window.plugin.ownership.getPortals = function() {
   });
 
   return window.plugin.ownership.listPortals.length > 0; // Used to decide whether or not to display the list.
-}
+};
 
 window.plugin.ownership.displayPL = function() {
   var list;
@@ -734,18 +770,18 @@ window.plugin.ownership.displayPL = function() {
       }}
     });
   }
-}
+};
 
 window.plugin.ownership.ownedPortalListTitle = function() {
   return 'Portal list: ' + window.plugin.ownership.listPortals.length + ' ' + (window.plugin.ownership.listPortals.length == 1 ? 'portal' : 'portals');
-}
+};
 
 window.plugin.ownership.setOwnedPortalListTitle = function(title) {
   if(!title)
     title = window.plugin.ownership.ownedPortalListTitle();
 
   $('.ui-dialog-ownershiplist > .ui-dialog-titlebar > span').text(title);
-}
+};
 
 window.plugin.ownership.updatePortalFromRefreshAll = function(portalGUID) {
   if (!window.plugin.ownership.updatingPortalGUID) {
@@ -837,7 +873,7 @@ window.plugin.ownership.portalTable = function(sortBy, sortOrder) {
 
   // Add rows for each portal
   portals.forEach(function(obj, i) {
-    var row = obj.row
+    var row = obj.row;
     if(row.parentNode) row.parentNode.removeChild(row);
 
     // Add portal number & add row to table
@@ -845,13 +881,15 @@ window.plugin.ownership.portalTable = function(sortBy, sortOrder) {
     table.appendChild(row);
   });
 
-  container.append('<div class="information">Information generated from the latest known data (the last time the portal detail was shown).<br>'
-    + 'Click \'Refresh All\' to update all portal information or click a portal name to update information for that portal.<br>'
-    + 'Click on portals table headers to sort by that column.<br>'
-    + 'Double click on the number of days owned for a portal to adjust manually</div>');
+  container.append(
+    '<div class="information">Information generated from the latest known data (the last time the portal detail was shown).<br>' +
+    'Click \'Refresh All\' to update all portal information or click a portal name to update information for that portal.<br>' +
+    'Click on portals table headers to sort by that column.<br>' +
+    'Double click on the number of days owned for a portal to adjust manually</div>'
+  );
 
   return container;
-}
+};
 
 window.plugin.ownership.navigateToAndSelectPortal = function(guid, portal) {
   var mapBounds = map.getBounds();
@@ -860,7 +898,7 @@ window.plugin.ownership.navigateToAndSelectPortal = function(guid, portal) {
     renderPortalDetails(guid);
   else
     zoomToAndShowPortal(guid, [portal.latE6/1E6, portal.lngE6/1E6]);
-}
+};
 
 // Constructs a link to the given portal.
 // Always moves the map to the portal location and displays its details.
@@ -876,13 +914,13 @@ window.plugin.ownership.getPortalLink = function(guid, portal) {
     return false;
   }, false);
   return link;
-}
+};
 
 window.plugin.ownership.onPaneChanged = function(pane) {
   if(pane == "plugin-ownership")
     window.plugin.ownership.displayPL();
   else
-    $("#ownershiplist").remove()
+    $("#ownershiplist").remove();
 };
 
 // Owned Portal List End
@@ -916,7 +954,7 @@ var setup = function() {
   } else {
     $('#toolbox').append('<a onclick="window.plugin.ownership.displayPL()" title="Display a list of portals in the current view [g]" accesskey="g">Owned Portals</a>');
   }
-}
+};
 
 //PLUGIN END //////////////////////////////////////////////////////////
 @@PLUGINEND@@
