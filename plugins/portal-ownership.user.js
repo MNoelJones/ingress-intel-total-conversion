@@ -169,7 +169,6 @@ window.plugin.ownership.setDaysToDecay = function(resonators) {
     7: 5000,
     8: 6000,
   };
-  console.log("Running setDaysToDecay");
   var daystodecay = 0;
   if (resonators.length > 0) {
     daystodecay = Math.floor(Math.min.apply(
@@ -204,25 +203,25 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
     guid = window.selectedPortal;
 
   var ownershipInfo = plugin.ownership.ownership[guid];
-  if(owned){ // If creating/updating an owned portal
-    if(!ownershipInfo){ // Creating one that doesn't exist
+  if (owned) { // If creating/updating an owned portal
+    if (!ownershipInfo) { // Creating one that doesn't exist
       plugin.ownership.ownership[guid] = ownershipInfo = {
         owned: owned,
       };
     }
 
-    if(!portal)
+    if (!portal) {
       portal = window.portalDetail.get(guid);
+    }
 
-    if(portal){
-      if(!ownershipInfo.title){ // May not already have portal information
+    if (portal) {
+      if (!ownershipInfo.title) { // May not already have portal information
         // Add in most recently known portal information
         ownershipInfo.title = (!portal.name) ? portal.title : portal.name;
         ownershipInfo.latE6 = portal.latE6;
         ownershipInfo.lngE6 = portal.lngE6;
         ownershipInfo.health = portal.health;
         if (portal.resonators) {
-          console.log("Setting minreshealth & daystodecay");
           ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
           ownershipInfo.daystodecay = window.plugin.ownership.setDaysToDecay(portal.resonators);
         }
@@ -237,10 +236,22 @@ window.plugin.ownership.updateOwned = function(owned, guid, portal) {
         if (portal.health && portal.resCount && portal.level) {
           ownershipInfo.health = portal.health;
           ownershipInfo.resonatorCount = portal.resCount;
+          let d = new Date();
+          let time = d.getHours() * 60 + d.getMinutes();
+          if (portal.level < ownershipInfo.level) {
+            if (ownershipInfo.minLevelChangedTime === undefined) {
+              ownershipInfo.minLevelChangedTime = NaN;
+            }
+            ownershipInfo.minLevelChangedTime = Math.min(ownershipInfo.levelChangeTime, time);
+          } else {
+            if (ownershipInfo.maxLevelUnchangedTime === undefined) {
+              ownershipInfo.maxLevelUnchangedTime = NaN;
+            }
+            ownershipInfo.maxLevelUnchangedTime = Math.max(ownershipInfo.maxLevelUnchangedTime, time);
+          }
           ownershipInfo.level = portal.level;
         }
         if (portal.resonators) {
-          console.log("Setting minreshealth & daystodecay");
           ownershipInfo.minreshealth = window.plugin.ownership.setMinResHealth(portal.resonators);
           ownershipInfo.daystodecay = window.plugin.ownership.setDaysToDecay(portal.resonators);
         }
@@ -608,7 +619,9 @@ window.plugin.ownership.fields = [
   {
     title: "Days to Decay",
     value: function(portal) { return portal.daystodecay; },
-    sortValue: function(value, portal) { return value !== undefined ? `${value}${portal.title}`.toLowerCase() : `${portal.title}`.toLowerCase(); },
+    sortValue: function(value, portal) {
+      return value !== undefined ? `${value}${portal.title}`.toLowerCase() : `${portal.title}`.toLowerCase();
+    },
     format: function(cell, portalGUID, portal, value) {
       var text = value !== undefined ? (value) : "-";
       $(cell)
@@ -622,7 +635,6 @@ window.plugin.ownership.fields = [
     title: "Estimated Days to Decay",
     value: function(portal) {
       let resp = window.plugin.ownership.diffDate(portal.updatedDate);
-      console.log(`resp: ${JSON.stringify(resp)}`);
       if (isNaN(resp.days)) {
         return portal.daystodecay;
       }
